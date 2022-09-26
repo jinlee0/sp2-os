@@ -4,6 +4,7 @@ package main.java.os;
 import main.java.cpu.Context;
 import main.java.cpu.EContext;
 
+import java.util.List;
 import java.util.Vector;
 
 public class Process {
@@ -40,14 +41,44 @@ public class Process {
         return pcb.getPC() >= instructions.size();
     }
 
-    public class PCB {
+    public static class PCB {
         private Context context = new Context();
+
+        private int pid;
+        // Account
+        private int oid;
+        // Status
+        private EStatus eStatus;
+        // IO Status Information
+        private List<?> ioDevices;
+
+        private CPUContext cpuContext;
+
+        public class CPUContext {
+            // CU
+            private int pc;
+            // Segment Registers
+            private int cs;
+            private int ds;
+            private int ss;
+            private int hs;
+            // ALU
+            private int ac;
+            // Memory Interface
+            private int mar;
+            private int mbr;
+        }
+
 
         public Context getContext() {
             return context;
         }
         public int getPC() {
             return context.get(EContext.PC);
+        }
+
+        public enum EStatus {
+            RUNNING, READY, WAITING, SUSPENDED
         }
     }
 

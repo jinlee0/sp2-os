@@ -34,9 +34,8 @@ public class Scheduler {
             interruptHandler.handle();
             while (!cpu.hasInterrupt()) {
                 runningProcess.run();
-                if (runningProcess.isEnd()) {
+                if (runningProcess.isEnd())
                     cpu.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_END, runningProcess));
-                }
             }
         }
         System.out.println("Scheduler run() end");
