@@ -1,0 +1,21 @@
+.program
+.data
+codeSize 40
+dataSize 256
+stackSize 256
+heapSize 256
+.code
+move @0, 0
+interrupt read
+move @4, r0
+move @8, 0
+.label loop
+compare @0, @4
+jumpGraterThan loopEnd
+add @8, 1
+jump label
+.label loopEnd
+move r0, @8
+interrupt write
+halt
+.end

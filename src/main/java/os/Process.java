@@ -5,6 +5,7 @@ import main.java.cpu.Context;
 import main.java.cpu.EContext;
 
 import java.util.List;
+import java.util.Scanner;
 import java.util.Vector;
 
 public class Process {
@@ -33,13 +34,66 @@ public class Process {
         }
     }
 
-    public Context  getContext() {
-        return this.pcb.getContext();
-    }
-
     public boolean isEnd() {
         return pcb.getPC() >= instructions.size();
     }
+
+    // ****************************** 1005 수업
+    private int codeSize, dataSize, stackSize, heapSize;
+    private Vector<String> codeList = new Vector<>();
+
+    public void load(Scanner scanner) {
+        while (scanner.hasNext()) {
+            String line = scanner.nextLine();
+            while (!line.equals(".end")) {
+                if(line.equals(".data")) loadDataSegment(scanner);
+                else if(line.equals("code")) loadCodeSegment(scanner);
+                line = scanner.nextLine();
+            }
+        }
+    }
+
+    private void loadCodeSegment(Scanner scanner) {
+        while (true) {
+            String line = scanner.nextLine();
+            if(line.equals(".end")) break;
+            codeList.add(line);
+        }
+    }
+
+    private void loadDataSegment(Scanner scanner) {
+        while (true) {
+            String token = scanner.next();
+            if(token.equals(".code")) break;
+            int size = Integer.parseInt(scanner.next());
+            if(token.equals("codeSize")) this.codeSize = size;
+            if(token.equals("dataSize")) this.dataSize = size;
+            if(token.equals("stackSize")) this.stackSize = size;
+            if(token.equals("heapSize")) this.heapSize = size;
+        }
+    }
+
+    public int getCodeSize() {
+        return codeSize;
+    }
+
+    public int getDataSize() {
+        return dataSize;
+    }
+
+    public int getStackSize() {
+        return stackSize;
+    }
+
+    public int getHeapSize() {
+        return heapSize;
+    }
+
+    public Vector<String> getCodeList() {
+        return codeList;
+    }
+
+    // *****************************
 
     public static class PCB {
         private Context context = new Context();
