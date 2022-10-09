@@ -6,8 +6,11 @@ import main.java.cpu.interrupt.ProcessInterrupt;
 import main.java.exception.EmptyReadyQueueException;
 import main.java.power.Power;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.Scanner;
 
 public class Scheduler {
     private final CPU cpu = CPU.getInstance();
@@ -20,8 +23,13 @@ public class Scheduler {
 
 
     public void init() {
-        Process process = new Process();
-        cpu.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_START, process));
+        try {
+            Scanner scanner = new Scanner(new File("data/exe1.txt"));
+            this.runningProcess.load(scanner);
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public void run() {
@@ -30,8 +38,6 @@ public class Scheduler {
             interruptHandler.handle();
             while (!cpu.hasInterrupt()) {
                 runningProcess.run();
-                if (runningProcess.isEnd())
-                    cpu.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_END, runningProcess));
             }
         }
         System.out.println("Scheduler run() end");

@@ -49,7 +49,7 @@ public class CPU {
     }
 
     public void stop() {
-        System.out.println("Stop CPU");
         cpuTimer.stop();
+        System.out.println("Stop CPU");
     }
 }

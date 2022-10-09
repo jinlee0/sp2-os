@@ -58,7 +58,9 @@ class InterruptHandler {
     }
 
     private void handleProcessEnd(ProcessInterrupt interrupt) {
-        if (readyQueue.isEmpty()) throw new NoMoreProcessException(); // 더 이상 실행할 프로세스 없음
+        if (readyQueue.isEmpty()) {
+            throw new NoMoreProcessException(); // 더 이상 실행할 프로세스 없음
+        }
         Process interruptedProcess = interrupt.getProcess();
         Process runningProcess = scheduler.getRunningProcess();
         if (interruptedProcess == runningProcess) {

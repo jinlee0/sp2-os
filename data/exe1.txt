@@ -4,18 +4,53 @@ codeSize 40
 dataSize 256
 stackSize 256
 heapSize 256
+.dataEnd
 .code
-move @0, 0
-interrupt read
-move @4, r0
-move @8, 0
-.label loop
-compare @0, @4
-jumpGraterThan loopEnd
-add @8, 1
-jump label
-.label loopEnd
-move r0, @8
-interrupt write
-halt
+LDC 0
+STA 3
+LDC 0
+STA 4
+LDC 1
+STA 5
+LDC 70
+STA 0
+LDC 80
+STA 1
+LDC 90
+STA 2
+LDA 0
+ADDA 1
+ADDA 2
+STA 3
+LDA 3
+DIVC 3
+STA 4
+LDA 4
+SUBC 90
+BZN 25
+LDC 1
+STA 5
+BR 45
+LDA 4
+SUBC 80
+BZN 31
+LDC 2
+STA 5
+BR 45
+LDA 4
+SUBC 70
+BZN 37
+LDC 3
+STA 5
+BR 45
+LDA 4
+SUBC 60
+BZN 43
+LDC 4
+STA 5
+BR 45
+LDC 5
+STA 5
+HALT 0
+.codeEnd
 .end

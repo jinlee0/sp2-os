@@ -11,9 +11,6 @@ public class Context {
             contextMap.put(eRegister, 0);
         }
     }
-    public Context(Context other) {
-        loadFrom(other);
-    }
 
     public void loadFrom(Context other) {
         for (EContext eRegister : EContext.values()) {
