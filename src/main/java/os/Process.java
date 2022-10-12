@@ -201,7 +201,6 @@ public class Process {
             if(line.equals(".data")) loadDataSegment(scanner);
             if(line.equals(".code")) loadCodeSegment(scanner);
         }
-//        codeList.forEach(System.out::println);
     }
 
     private void loadCodeSegment(Scanner scanner) {
@@ -229,19 +228,15 @@ public class Process {
     public int getCodeSize() {
         return pcb.context.get(EContext.CS);
     }
-
     public int getDataSize() {
         return pcb.context.get(EContext.DS);
     }
-
     public int getStackSize() {
         return pcb.context.get(EContext.SS);
     }
-
     public int getHeapSize() {
         return pcb.context.get(EContext.HS);
     }
-
     public Vector<String> getCodeList() {
         return codeList;
     }

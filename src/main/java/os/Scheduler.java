@@ -47,6 +47,19 @@ public class Scheduler {
         cpu.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_START, loader.load(processName)));
     }
 
+    public synchronized void enReadyQueue(Process process) {
+        this.readyQueue.enqueue(process);
+    }
+    public synchronized Process deReadyQueue() {
+        return this.readyQueue.dequeue();
+    }
+    public synchronized boolean isReadyQueueEmpty() {
+        return readyQueue.isEmpty();
+    }
+    public synchronized void removeFromReadyQueue(Process interruptedProcess) {
+        readyQueue.remove(interruptedProcess);
+    }
+
     public ProcessQueue getReadyQueue() {
         return readyQueue;
     }
@@ -62,21 +75,21 @@ public class Scheduler {
     public class ProcessQueue {
         private Queue<Process> queue = new ArrayDeque<>();
 
-        public void enqueue(Process process) {
+        private void enqueue(Process process) {
             queue.offer(process);
         }
 
-        public Process dequeue() {
+        private Process dequeue() {
             Process process = queue.poll();
             if(process == null) throw new EmptyReadyQueueException();
             return process;
         }
 
-        public boolean isEmpty() {
+        private boolean isEmpty() {
             return queue.isEmpty();
         }
 
-        public void remove(Process interruptedProcess) {
+        private void remove(Process interruptedProcess) {
             queue.remove(interruptedProcess);
         }
     }

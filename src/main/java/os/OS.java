@@ -1,6 +1,9 @@
 package main.java.os;
 
-public class OS {
+import main.java.cpu.CPU;
+import main.java.exception.NoMoreProcessException;
+
+public class OS extends Thread{
     private final Scheduler scheduler = new Scheduler();
 
     public void init() {
@@ -8,9 +11,18 @@ public class OS {
     }
 
     public void run() {
-        System.out.println("OS run()");
-        scheduler.run();
-        System.out.println();
+        try {
+            System.out.println("OS run()");
+            scheduler.run();
+            System.out.println();
+        } catch(NoMoreProcessException e) {
+            System.out.println("***** 더 이상 실행할 프로세스가 없습니다. *****");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            CPU.getInstance().stop();
+            System.out.println("Exit System");
+        }
     }
 
     public void load(String processName) {

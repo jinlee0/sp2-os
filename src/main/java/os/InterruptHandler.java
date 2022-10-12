@@ -9,11 +9,9 @@ import main.java.exception.NoMoreProcessException;
 
 class InterruptHandler {
     private final Scheduler scheduler;
-    private Scheduler.ProcessQueue readyQueue;
 
     public InterruptHandler(Scheduler scheduler) {
         this.scheduler = scheduler;
-        this.readyQueue = scheduler.getReadyQueue();
     }
 
     public void handle() {
@@ -54,28 +52,28 @@ class InterruptHandler {
     }
 
     private void handleProcessStart(ProcessInterrupt interrupt) {
-        scheduler.getReadyQueue().enqueue(interrupt.getProcess());
+        scheduler.enReadyQueue(interrupt.getProcess());
     }
 
     private void handleProcessEnd(ProcessInterrupt interrupt) {
-        if (readyQueue.isEmpty()) {
+        if (scheduler.isReadyQueueEmpty()) {
             throw new NoMoreProcessException(); // 더 이상 실행할 프로세스 없음
         }
         Process interruptedProcess = interrupt.getProcess();
         Process runningProcess = scheduler.getRunningProcess();
         if (interruptedProcess == runningProcess) {
-            Process nextProcess = readyQueue.dequeue();
+            Process nextProcess = scheduler.deReadyQueue();
             scheduler.setRunningProcess(nextProcess);
         } else {
-            readyQueue.remove(interruptedProcess);
+            scheduler.removeFromReadyQueue(interruptedProcess);
         }
     }
 
     private void handleTimeOut() {
         Process runningProcess = scheduler.getRunningProcess();
         Process currProcess = runningProcess;
-        readyQueue.enqueue(currProcess);
-        Process nextProcess = readyQueue.dequeue();
+        scheduler.enReadyQueue(currProcess);
+        Process nextProcess = scheduler.deReadyQueue();
         scheduler.setRunningProcess(nextProcess);
     }
 }

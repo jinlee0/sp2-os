@@ -3,7 +3,6 @@ package main.java.cpu;
 import main.java.cpu.interrupt.EInterrupt;
 import main.java.cpu.interrupt.Interrupt;
 import main.java.cpu.interrupt.NormalInterrupt;
-import main.java.memory.Memory;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -12,8 +11,6 @@ public class CPU {
     private static final CPU instance = new CPU();
 
     private final CPUTimer cpuTimer = CPUTimer.getInstance();
-    private final Memory memory = Memory.getInstance();
-    private final Context context = new Context();
     private final Deque<Interrupt> interruptQueue = new ArrayDeque<>();
 
     private CPU() {
@@ -25,10 +22,6 @@ public class CPU {
 
     public void run() {
         cpuTimer.run();
-    }
-
-    public Context getContext() {
-        return this.context;
     }
 
     public void addInterrupt(Interrupt interrupt) {
