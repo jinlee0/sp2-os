@@ -12,7 +12,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.Scanner;
 
-public class Scheduler {
+public class Scheduler extends Thread{
     private final CPU cpu = CPU.getInstance();
     private final Loader loader = new Loader();
 
@@ -20,7 +20,6 @@ public class Scheduler {
     private final ProcessQueue waitQueue = new ProcessQueue();
     private Process runningProcess = new Process();
     private InterruptHandler interruptHandler = new InterruptHandler(this);
-
 
     public void init() {
         try {
@@ -46,6 +45,9 @@ public class Scheduler {
     public void load(String processName) {
         cpu.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_START, loader.load(processName)));
     }
+    public void load(Process process) {
+        cpu.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_START, process));
+    }
 
     public synchronized void enReadyQueue(Process process) {
         this.readyQueue.enqueue(process);
@@ -58,10 +60,6 @@ public class Scheduler {
     }
     public synchronized void removeFromReadyQueue(Process interruptedProcess) {
         readyQueue.remove(interruptedProcess);
-    }
-
-    public ProcessQueue getReadyQueue() {
-        return readyQueue;
     }
 
     public Process getRunningProcess() {

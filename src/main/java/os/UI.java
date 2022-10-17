@@ -4,16 +4,15 @@ import java.util.Scanner;
 
 public class UI extends Thread {
     private final Scheduler scheduler;
+    private final Loader loader;
 
     public UI(Scheduler scheduler) {
+        this.loader = new Loader();
         this.scheduler = scheduler;
     }
 
     @Override
     public void run() {
-        Loader loader = new Loader();
-        Scheduler scheduler = new Scheduler();
-        OS os = new OS();
         // console command
         // "r fileName" -> execute fileName
         // "q" -> quit program
@@ -24,9 +23,10 @@ public class UI extends Thread {
             if(command.equals("exit")) break;
             else if (command.equals("r")) {
                 String fileName = scanner.next();
-                os.load(fileName);
+                scheduler.load(loader.load(fileName));
+            } else {
+                System.out.println("wrong command");
             }
-            scheduler.run();
         }
     }
 }

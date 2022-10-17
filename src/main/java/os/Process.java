@@ -28,7 +28,7 @@ public class Process {
         System.out.println("Process " + serialNumber);
         executeOneLine();
         try {
-            Thread.sleep(30L);
+            Thread.sleep(100L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
