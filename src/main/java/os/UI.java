@@ -1,5 +1,8 @@
 package main.java.os;
 
+import main.java.os.interrupt.InterruptQueue;
+import main.java.power.Power;
+
 import java.util.Scanner;
 
 public class UI extends Thread {
@@ -20,10 +23,15 @@ public class UI extends Thread {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String command = scanner.next();
-            if(command.equals("exit")) break;
+            if(command.equals("exit")) {
+                System.exit(0);
+                break;
+            }
             else if (command.equals("r")) {
                 String fileName = scanner.next();
-                scheduler.load(loader.load(fileName));
+                new Thread(() -> {
+                    scheduler.load(loader.load(fileName));
+                }).start();
             } else {
                 System.out.println("wrong command");
             }

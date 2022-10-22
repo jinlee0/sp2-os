@@ -16,6 +16,9 @@ public class Process {
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private Timer timer;
 
+    private final static long SLEEP_MILLIS = 10L;
+    private final static long TIME_OUT_MILLIS = 300L;
+
     public Process() {
         serialNumber = SERIAL_NUMBER++;
         pcb.pid = serialNumber;
@@ -32,11 +35,11 @@ public class Process {
                 public void run() {
                     interruptQueue.addTimeOut(thisProcess);
                 }
-            }, 300L);
+            }, TIME_OUT_MILLIS);
         }
         executeOneLine();
         try {
-            Thread.sleep(100L);
+            Thread.sleep(SLEEP_MILLIS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

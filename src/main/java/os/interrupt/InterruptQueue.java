@@ -36,6 +36,9 @@ public class InterruptQueue {
             return interruptQueue.poll();
         });
     }
+    public Interrupt pollLast() {
+        return runWithInterruptQueueSemaphore(() -> interruptQueue.pollLast());
+    }
     public boolean hasInterrupt() {
         return runWithInterruptQueueSemaphore(() -> !interruptQueue.isEmpty());
     }
