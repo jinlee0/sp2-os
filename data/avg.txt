@@ -1,6 +1,6 @@
 .program
 .data
-codeSize 40
+codeSize 256
 dataSize 256
 stackSize 256
 heapSize 256

@@ -2,12 +2,6 @@ package main.java.os.interrupt;
 
 import main.java.os.Process;
 import main.java.os.Scheduler;
-import main.java.os.interrupt.InterruptQueue;
-import main.java.os.interrupt.EInterrupt;
-import main.java.os.interrupt.Interrupt;
-import main.java.os.interrupt.NormalInterrupt;
-import main.java.os.interrupt.ProcessInterrupt;
-import main.java.exception.NoMoreProcessException;
 import main.java.utils.Logger;
 
 public class InterruptHandler {
@@ -52,12 +46,27 @@ public class InterruptHandler {
                 handleProcessEnd(interrupt);
                 break;
             case IO_START:
+                handleIOStart(interrupt);
                 break;
             case IO_COMPLETE:
+                handleIOComplete(interrupt);
                 break;
             default:
                 break;
         }
+    }
+
+    private void handleIOComplete(ProcessInterrupt interrupt) {
+        Process process = interrupt.getProcess();
+        scheduler.removeFromWaitQueue(process);
+        scheduler.enReadyQueue(process);
+    }
+
+    private void handleIOStart(ProcessInterrupt interrupt) {
+        Process currProcess = scheduler.getRunningProcess();
+        currProcess.waiting();
+        scheduler.enWaitQueue(currProcess);
+        scheduler.setRunningProcess(scheduler.deReadyQueue());
     }
 
     private void handleProcessStart(ProcessInterrupt interrupt) {
@@ -68,6 +77,7 @@ public class InterruptHandler {
         Process interruptedProcess = interrupt.getProcess();
         Process currProcess = scheduler.getRunningProcess();
         if (interruptedProcess == currProcess) {
+            if(scheduler.isReadyQueueEmpty()) scheduler.setRunningProcess(null);
             Process nextProcess = scheduler.deReadyQueue();
             scheduler.setRunningProcess(nextProcess);
         } else {

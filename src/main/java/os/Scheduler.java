@@ -15,7 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Scheduler extends Thread{
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private final BlockingQueue<Process> readyQueue = new LinkedBlockingQueue<>(READY_QUEUE_MAX_SIZE);
-    private final ProcessQueue waitQueue = new ProcessQueue();
+    private final BlockingQueue<Process> waitQueue = new LinkedBlockingQueue<>(READY_QUEUE_MAX_SIZE);
     private Process runningProcess;
     private InterruptHandler interruptHandler = new InterruptHandler(this);
 
@@ -89,6 +89,19 @@ public class Scheduler extends Thread{
     }
     /////////////////////
 
+    // critical section
+    public void enWaitQueue(Process process) {
+        try {
+            waitQueue.put(process);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    public void removeFromWaitQueue(Process process) {
+        waitQueue.remove(process);
+    }
+    /////////////////////
+
     public Process getRunningProcess() {
         return runningProcess;
     }
@@ -99,7 +112,7 @@ public class Scheduler extends Thread{
 
     public void terminate(long processSerialNumber) {
         Process target = null;
-        if(runningProcess.getSerialNumber() == processSerialNumber) target = runningProcess;
+        if(runningProcess != null && runningProcess.getSerialNumber() == processSerialNumber) target = runningProcess;
         else target = findBySerialNumber(processSerialNumber);
         if(target == null) throw new ProcessNotFound();
         interruptQueue.addProcessEnd(target);

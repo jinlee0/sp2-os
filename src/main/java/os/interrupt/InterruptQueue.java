@@ -30,6 +30,12 @@ public class InterruptQueue {
     public void addTimeOut(Process process) {
         runWithInterruptQueueSemaphore(() -> interruptQueue.offerFirst(new ProcessInterrupt(EInterrupt.EProcessInterrupt.TIME_OUT, process)));
     }
+    public void addIOStart(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.IO_START, process));
+    }
+    public void addIOComplete(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.IO_COMPLETE, process));
+    }
     public Interrupt pollInterrupt() {
         return runWithInterruptQueueSemaphore(() -> {
             if(interruptQueue.isEmpty()) return new NormalInterrupt(EInterrupt.ENormalInterrupt.NONE);
@@ -39,9 +45,11 @@ public class InterruptQueue {
     public Interrupt pollLast() {
         return runWithInterruptQueueSemaphore(() -> interruptQueue.pollLast());
     }
+
     public boolean hasInterrupt() {
         return runWithInterruptQueueSemaphore(() -> !interruptQueue.isEmpty());
     }
+
     public void removeAllOf(Process currProcess) {
         runWithInterruptQueueSemaphore(() -> interruptQueue.removeIf((i) -> i instanceof ProcessInterrupt && ((ProcessInterrupt) i).getProcess() == currProcess));
     }

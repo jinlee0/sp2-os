@@ -3,6 +3,9 @@ package main.java.os;
 
 import main.java.exception.CannotLoadUninitializedMemory;
 import main.java.exception.InvalidExeFormatException;
+import main.java.exception.InvalidInterruptCode;
+import main.java.io.Keyboard;
+import main.java.io.Monitor;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.utils.Logger;
 
@@ -50,6 +53,10 @@ public class Process {
     public void ready() {
         pcb.setStatus(EStatus.READY);
         timer.cancel();
+    }
+
+    public void waiting() {
+        pcb.setStatus(EStatus.WAITING);
     }
 
     private void executeOneLine() {
@@ -120,30 +127,39 @@ public class Process {
             case BZP:
                 exeBZP(operand);
                 break;
+            case INT:
+                exeINT(operand);
+                break;
             case HALT:
                 exeHALT();
                 break;
         }
     }
 
+    private void exeINT(int operand) {
+        // process를 웨이팅 큐로
+        // IO 마치면 인터럽트 생김
+        try {
+            timer.cancel();
+            interruptQueue.addIOStart(this);
+            EIOCode eIOCode = EIOCode.of(operand);
+            switch (eIOCode) {
+                case WRITE:
+                    Monitor.getInstance().add(this, pcb.getAC());
+                    break;
+                case READ:
+                    Keyboard.getInstance().add(this);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
     private void exeHALT() {
         interruptQueue.addProcessEnd(this);
         Logger.add(this.toString());
 //        System.out.println(this);
-    }
-
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Process_" + serialNumber + "의 종료 직전 상태").append(System.lineSeparator());
-        sb.append("\t").append("PCB").append(System.lineSeparator());
-        for (EContext eContext : EContext.values()) {
-            sb.append("\t\t").append(eContext).append(": ").append(pcb.context.get(eContext)).append(System.lineSeparator());
-        }
-        sb.append("\t").append("Memory").append(System.lineSeparator());
-        for (Integer integer : memory.keySet()) {
-            sb.append("\t\t").append(integer).append(": ").append(memory.get(integer)).append(System.lineSeparator());
-        }
-        return sb.toString();
     }
 
     private void exeBZP(int operand) {
@@ -208,7 +224,6 @@ public class Process {
         if(value == null) throw new CannotLoadUninitializedMemory();
         return value;
     }
-
     public void load(Scanner scanner) {
         if(!scanner.next().equals(".program")) throw new InvalidExeFormatException();
         while (true) {
@@ -244,6 +259,20 @@ public class Process {
         }
     }
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Process_" + serialNumber + "의 종료 직전 상태").append(System.lineSeparator());
+        sb.append("\t").append("PCB").append(System.lineSeparator());
+        for (EContext eContext : EContext.values()) {
+            sb.append("\t\t").append(eContext).append(": ").append(pcb.context.get(eContext)).append(System.lineSeparator());
+        }
+        sb.append("\t").append("Memory").append(System.lineSeparator());
+        for (Integer integer : memory.keySet()) {
+            sb.append("\t\t").append(integer).append(": ").append(memory.get(integer)).append(System.lineSeparator());
+        }
+        return sb.toString();
+    }
+
     public int getSerialNumber() {
         return serialNumber;
     }
@@ -262,6 +291,11 @@ public class Process {
     public List<String> getCodeList() {
         return codeList;
     }
+
+    public void setAC(int value) {
+        pcb.setAC(value);
+    }
+
 
     public class PCB {
         private Context context = new Context();
@@ -344,6 +378,22 @@ public class Process {
         BP,
         BZP,
         BZN,
+        INT
         ;
+    }
+    public enum EIOCode {
+        WRITE(0), READ(1);
+
+        private int code;
+
+        EIOCode(int code) {
+            this.code = code;
+        }
+        static EIOCode of(int code) {
+            for (EIOCode value : values()) {
+                if(value.code == code) return value;
+            }
+            throw new InvalidInterruptCode();
+        }
     }
 }

@@ -1,12 +1,13 @@
 .program
 .data
-codeSize 40
+codeSize 256
 dataSize 256
 stackSize 256
 heapSize 256
 .dataEnd
 .code
-BR 0
+INT 1 // read and put on AC
+INT 0 // write AC
 HALT 0
 .codeEnd
 .end
