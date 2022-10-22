@@ -29,11 +29,14 @@ public class Keyboard extends Thread{
         while (Power.isOn()) {
             try {
                 Task task = tasks.take();
-                printer.print("Keyboard >> ");
-                int buffer = Integer.parseInt(scanner.nextLine());
-                Process owner = task.getOwner();
-                owner.setAC(buffer);
-                interruptQueue.addIOComplete(owner);
+                try {
+                    Process owner = task.getOwner();
+                    int buffer = Integer.parseInt(scanner.nextLine("Process_" + owner.getSerialNumber() + " >> " + "Keyboard >> "));
+                    owner.setAC(buffer);
+                    interruptQueue.addIOComplete(owner);
+                } catch (NumberFormatException e) {
+                    add(task.getOwner());
+                }
                 Thread.sleep(1000L);
             } catch (InterruptedException e) {
                 e.printStackTrace();

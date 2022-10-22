@@ -26,8 +26,9 @@ public class Monitor extends Thread{
         while (Power.isOn()) {
             try {
                 Task task = tasks.take();
-                MPrinter.getInstance().println("Screen >> " + task.getValue());
-                interruptQueue.addIOComplete(task.getOwner());
+                Process owner = task.getOwner();
+                MPrinter.getInstance().println("Process_" + owner.getSerialNumber() + " >> Screen >> " + task.getValue());
+                interruptQueue.addIOComplete(owner);
                 Thread.sleep(1000L);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -41,10 +42,6 @@ public class Monitor extends Thread{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    public boolean hasMore() {
-        return !tasks.isEmpty();
     }
 
     public class Task {

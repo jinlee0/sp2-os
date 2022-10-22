@@ -30,6 +30,19 @@ public class MScanner {
     public void release() {
         semaphore.release();
     }
+
+    public String nextLine(String s) {
+        try {
+            semaphore.acquire();
+            System.out.print(s);
+            return scanner.nextLine();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            semaphore.release();
+        }
+        return null;
+    }
 //    public String nextLine(String s) {
 //        MPrinter.getInstance().print(s);
 //        return nextLine();

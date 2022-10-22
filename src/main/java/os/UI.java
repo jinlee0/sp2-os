@@ -25,15 +25,18 @@ public class UI extends Thread {
         // console command
         // "r fileName" -> execute fileName
         // "q" -> quit program
-        println("UI run");
+        printlnln("UI run");
         while (true) {
-            printer.print("UI >> ");
-//            StringTokenizer st = new StringTokenizer(scanner.nextLine("UI >> "));
-            StringTokenizer st = new StringTokenizer(scanner.nextLine());
-            String command = st.nextToken();
+            StringTokenizer st = new StringTokenizer(scanner.nextLine("UI >> "));
+            String command = null;
+            try {
+                command = st.nextToken();
+            } catch (Exception e) {
+                continue;
+            }
             switch (command) {
                 case "q":
-                    println("End system");
+                    printlnln("End system");
                     System.exit(0);
                     return;
                 case "r":
@@ -46,7 +49,7 @@ public class UI extends Thread {
                     handleLog(st);
                     break;
                 default:
-                    println("wrong command");
+                    printlnln("wrong command");
                     break;
             }
         }
@@ -62,7 +65,7 @@ public class UI extends Thread {
                     Logger.stopAutoFlush();
                     break;
                 default:
-                    println("help: log [on/off]");
+                    printlnln("help: log [on/off]");
                     break;
             }
         } catch (NoSuchElementException e) {
@@ -73,11 +76,11 @@ public class UI extends Thread {
     private void terminateProcess(String token) {
         try {
             scheduler.terminate(Long.parseLong(token));
-            println("Process_" + token + " is terminated");
+            printlnln("Process_" + token + " is terminated");
         } catch (NumberFormatException e) {
-            println("Serial number must be long number");
+            printlnln("Serial number must be long number");
         } catch (ProcessNotFound e) {
-            println("Process_" + token + " is not found");
+            printlnln("Process_" + token + " is not found");
         }
     }
 
@@ -85,13 +88,16 @@ public class UI extends Thread {
         synchronized (MScanner.getInstance()) {
             try {
                 scheduler.load(loader.load(token));
-                println(token + " is loaded");
+                printlnln(token + " is loaded");
             } catch (FileNotFoundException e) {
-                println("File " + token + " is not found");
+                printlnln("File " + token + " is not found");
             }
         }
     }
 
+    private void printlnln(String s) {
+        println(s + System.lineSeparator());
+    }
     private void println(String s) {
         printer.println(s);
     }
