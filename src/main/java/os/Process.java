@@ -3,9 +3,7 @@ package main.java.os;
 
 import main.java.exception.CannotLoadUninitializedMemory;
 import main.java.exception.NotProgramException;
-import main.java.os.interrupt.EInterrupt;
 import main.java.os.interrupt.InterruptQueue;
-import main.java.os.interrupt.ProcessInterrupt;
 
 import java.util.*;
 
@@ -32,7 +30,7 @@ public class Process {
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    interruptQueue.addTimeOutInterrupt(thisProcess);
+                    interruptQueue.addTimeOut(thisProcess);
                 }
             }, 300L);
         }
@@ -122,7 +120,7 @@ public class Process {
     }
 
     private void exeHALT() {
-        interruptQueue.addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_END, this));
+        interruptQueue.addProcessEnd(this);
         System.out.println(this);
     }
 

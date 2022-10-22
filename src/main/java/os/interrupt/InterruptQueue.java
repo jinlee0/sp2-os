@@ -18,10 +18,16 @@ public class InterruptQueue {
     }
 
     // Critical Section
-    public void addInterrupt(Interrupt interrupt) {
+    public void addProcessEnd(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_END, process));
+    }
+    public void addProcessStart(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_START, process));
+    }
+    private void addInterrupt(Interrupt interrupt) {
         runWithInterruptQueueSemaphore(() -> interruptQueue.offer(interrupt));
     }
-    public void addTimeOutInterrupt(Process process) {
+    public void addTimeOut(Process process) {
         runWithInterruptQueueSemaphore(() -> interruptQueue.offerFirst(new ProcessInterrupt(EInterrupt.EProcessInterrupt.TIME_OUT, process)));
     }
     public Interrupt pollInterrupt() {

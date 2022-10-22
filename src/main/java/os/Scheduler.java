@@ -61,7 +61,7 @@ public class Scheduler extends Thread{
     }
 
     public void load(Process process) {
-        interruptQueue.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_START, process));
+        interruptQueue.addProcessStart(process);
     }
 
     // critical section
