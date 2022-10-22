@@ -2,8 +2,9 @@ package main.java.os;
 
 
 import main.java.exception.CannotLoadUninitializedMemory;
-import main.java.exception.NotProgramException;
+import main.java.exception.InvalidExeFormatException;
 import main.java.os.interrupt.InterruptQueue;
+import main.java.utils.Logger;
 
 import java.util.*;
 
@@ -25,7 +26,8 @@ public class Process {
     }
 
     public void run() {
-        System.out.println("Process " + serialNumber);
+//        System.out.println("Process " + serialNumber);
+        Logger.add("Process" + serialNumber);
         if (pcb.getStatus() != EStatus.RUNNING) {
             pcb.setStatus(EStatus.RUNNING);
             timer = new Timer();
@@ -55,7 +57,8 @@ public class Process {
         String line = codeList.get(PC);
         pcb.getContext().set(EContext.PC, PC + 1);
 
-        System.out.println("\tPC: "+ PC + ", " + line.split("//")[0]);
+//        System.out.println("\tPC: "+ PC + ", " + line.split("//")[0]);
+        Logger.add("\tPC: "+ PC + ", " + line.split("//")[0]);
         StringTokenizer st = new StringTokenizer(line);
         EOpCode eOpCode = EOpCode.valueOf(st.nextToken().trim().toUpperCase(Locale.ROOT));
         int operand = Integer.parseInt(st.nextToken());
@@ -125,7 +128,8 @@ public class Process {
 
     private void exeHALT() {
         interruptQueue.addProcessEnd(this);
-        System.out.println(this);
+        Logger.add(this.toString());
+//        System.out.println(this);
     }
 
     public String toString() {
@@ -206,8 +210,9 @@ public class Process {
     }
 
     public void load(Scanner scanner) {
-        if(!scanner.next().equals(".program")) throw new NotProgramException();
+        if(!scanner.next().equals(".program")) throw new InvalidExeFormatException();
         while (true) {
+            if(!scanner.hasNextLine()) throw new InvalidExeFormatException();
             String line = scanner.nextLine();
             if(line.equals(".end")) break;
             if(line.equals(".data")) loadDataSegment(scanner);
@@ -217,6 +222,7 @@ public class Process {
 
     private void loadCodeSegment(Scanner scanner) {
         while (true) {
+            if(!scanner.hasNextLine()) throw new InvalidExeFormatException();
             String line = scanner.nextLine();
             if (line.equals(".codeEnd")) break;
             codeList.add(line);
@@ -225,6 +231,7 @@ public class Process {
 
     private void loadDataSegment(Scanner scanner) {
         while (true) {
+            if(!scanner.hasNext()) throw new InvalidExeFormatException();
             String token = scanner.next();
             if(token.equals(".dataEnd")) return;
             int size = Integer.parseInt(scanner.next());

@@ -1,11 +1,13 @@
 package main.java.os;
 
 import main.java.exception.ProcessNotFound;
+import main.java.utils.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 public class UI extends Thread {
@@ -37,6 +39,9 @@ public class UI extends Thread {
                     case "t":
                         terminateProcess(st.nextToken());
                         break;
+                    case "log":
+                        handleLog(st);
+                        break;
                     default:
                         System.out.println("wrong command");
                         break;
@@ -44,6 +49,24 @@ public class UI extends Thread {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void handleLog(StringTokenizer st) {
+        try {
+            switch (st.nextToken()) {
+                case "on":
+                    Logger.startAutoFlush();
+                    break;
+                case "off":
+                    Logger.stopAutoFlush();
+                    break;
+                default:
+                    System.out.println("help: log [on/off]");
+                    break;
+            }
+        } catch (NoSuchElementException e) {
+            Logger.flush();
         }
     }
 

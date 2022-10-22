@@ -8,6 +8,7 @@ import main.java.os.interrupt.Interrupt;
 import main.java.os.interrupt.NormalInterrupt;
 import main.java.os.interrupt.ProcessInterrupt;
 import main.java.exception.NoMoreProcessException;
+import main.java.utils.Logger;
 
 public class InterruptHandler {
     private final Scheduler scheduler;
@@ -20,7 +21,8 @@ public class InterruptHandler {
     public void handle() {
         Interrupt interrupt = interruptQueue.pollInterrupt();
         EInterrupt eInterrupt = interrupt.getEInterrupt();
-        System.out.println("Handle Interrupt: " + eInterrupt);
+//        System.out.println("Handle Interrupt: " + eInterrupt);
+        Logger.add("Handle Interrupt: " + eInterrupt);
         handle(interrupt);
     }
 

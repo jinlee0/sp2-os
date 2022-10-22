@@ -5,6 +5,7 @@ import main.java.exception.ProcessNotFound;
 import main.java.os.interrupt.InterruptHandler;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
+import main.java.utils.Logger;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -39,7 +40,8 @@ public class Scheduler extends Thread{
     }
 
     public void run() {
-        System.out.println("Scheduler run() start");
+//        System.out.println("Scheduler run() start");
+        Logger.add("Scheduler run() start");
         while (Power.isOn()) {
             interruptHandler.handle();
             while (!interruptQueue.hasInterrupt()) {
@@ -47,7 +49,8 @@ public class Scheduler extends Thread{
                 runningProcess.run();
             }
         }
-        System.out.println("Scheduler run() end");
+//        System.out.println("Scheduler run() end");
+        Logger.add("Scheduler run() end");
     }
 
     public void load(Process process) {
