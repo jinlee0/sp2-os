@@ -1,4 +1,4 @@
-package main.java.cpu.interrupt;
+package main.java.os.interrupt;
 
 public interface Interrupt {
     EInterrupt getEInterrupt();

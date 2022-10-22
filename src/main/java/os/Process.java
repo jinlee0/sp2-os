@@ -1,23 +1,22 @@
 package main.java.os;
 
 
-import main.java.cpu.CPU;
-import main.java.cpu.Context;
-import main.java.cpu.EContext;
-import main.java.cpu.EOpCode;
-import main.java.cpu.interrupt.EInterrupt;
-import main.java.cpu.interrupt.ProcessInterrupt;
 import main.java.exception.CannotLoadUninitializedMemory;
 import main.java.exception.NotProgramException;
+import main.java.os.interrupt.EInterrupt;
+import main.java.os.interrupt.InterruptQueue;
+import main.java.os.interrupt.ProcessInterrupt;
 
 import java.util.*;
 
 public class Process {
-    private PCB pcb = new PCB();
-    private int serialNumber;
+    private final PCB pcb = new PCB();
+    private final int serialNumber;
     private static int SERIAL_NUMBER = 0;
-    private Vector<String> codeList = new Vector<>();
-    private Map<Integer, Integer> memory = new HashMap<>();
+    private final List<String> codeList = new ArrayList<>();
+    private final Map<Integer, Integer> memory = new HashMap<>();
+    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
+    private Timer timer;
 
     public Process() {
         serialNumber = SERIAL_NUMBER++;
@@ -26,6 +25,17 @@ public class Process {
 
     public void run() {
         System.out.println("Process " + serialNumber);
+        if (pcb.getStatus() != EStatus.RUNNING) {
+            pcb.setStatus(EStatus.RUNNING);
+            timer = new Timer();
+            Process thisProcess = this;
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    interruptQueue.addTimeOutInterrupt(thisProcess);
+                }
+            }, 300L);
+        }
         executeOneLine();
         try {
             Thread.sleep(100L);
@@ -34,10 +44,15 @@ public class Process {
         }
     }
 
+    public void ready() {
+        pcb.setStatus(EStatus.READY);
+        timer.cancel();
+    }
+
     private void executeOneLine() {
         int PC = pcb.getPC();
         String line = codeList.get(PC);
-        System.out.println("\t"+line);
+        System.out.println("\tPC: "+ PC + ", " + line);
         StringTokenizer st = new StringTokenizer(line);
         EOpCode eOpCode = EOpCode.valueOf(st.nextToken().trim().toUpperCase(Locale.ROOT));
         int operand = Integer.parseInt(st.nextToken());
@@ -103,12 +118,11 @@ public class Process {
                 exeHALT();
                 break;
         }
-//        System.out.println("CODE: " + line);
         pcb.getContext().set(EContext.PC, PC + 1);
     }
 
     private void exeHALT() {
-        CPU.getInstance().addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_END, this));
+        interruptQueue.addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_END, this));
         System.out.println(this);
     }
 
@@ -189,10 +203,6 @@ public class Process {
         return value;
     }
 
-    public boolean isEnd() {
-        return pcb.getPC() >= codeList.size();
-    }
-
     public void load(Scanner scanner) {
         if(!scanner.next().equals(".program")) throw new NotProgramException();
         while (true) {
@@ -237,7 +247,7 @@ public class Process {
     public int getHeapSize() {
         return pcb.context.get(EContext.HS);
     }
-    public Vector<String> getCodeList() {
+    public List<String> getCodeList() {
         return codeList;
     }
 
@@ -248,7 +258,7 @@ public class Process {
         // Account
         private int oid;
         // Status
-        private EStatus eStatus;
+        private EStatus eStatus = EStatus.NONE;
         // IO Status Information
         private List<?> ioDevices;
 
@@ -263,8 +273,65 @@ public class Process {
         public void setPC(int address) {
             context.set(EContext.PC, address);
         }
+        public EStatus getStatus() {
+            return eStatus;
+        }
+        public void setStatus(EStatus eStatus) {
+            this.eStatus = eStatus;
+        }
     }
-    public enum EStatus {
-        RUNNING, READY, WAITING, SUSPENDED
+
+    private enum EStatus {
+        RUNNING, READY, WAITING, SUSPENDED, NONE
+    }
+
+    private class Context {
+        private final Map<EContext, Integer> contextMap = new HashMap<>();
+
+        public Context() {
+            for (EContext eRegister : EContext.values()) {
+                contextMap.put(eRegister, 0);
+            }
+        }
+
+        public int get(EContext eRegister) {
+            return this.contextMap.get(eRegister);
+        }
+
+        public void set(EContext key, int value) {
+            this.contextMap.put(key, value);
+        }
+
+    }
+    private enum EContext {
+        PC,
+        //    IR, MBR, MAR,
+        AC,
+        //    PROCESS_ID,
+        CS, DS, SS, HS,
+        ;
+    }
+    private enum EOpCode {
+        HALT,
+        LDC,
+        LDA,
+        STA,
+        ADDA,
+        SUBA,
+        MULA,
+        DIVA,
+        SHRA,
+        ADDC,
+        SUBC,
+        MULC,
+        DIVC,
+        SHRC,
+        BR,
+        BZ,
+        BN,
+        BP,
+        BZP,
+        BZN,
+        ;
     }
 }

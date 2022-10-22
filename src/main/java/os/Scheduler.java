@@ -1,8 +1,9 @@
 package main.java.os;
 
-import main.java.cpu.CPU;
-import main.java.cpu.interrupt.EInterrupt.EProcessInterrupt;
-import main.java.cpu.interrupt.ProcessInterrupt;
+import main.java.os.interrupt.InterruptHandler;
+import main.java.os.interrupt.InterruptQueue;
+import main.java.os.interrupt.EInterrupt.EProcessInterrupt;
+import main.java.os.interrupt.ProcessInterrupt;
 import main.java.exception.EmptyReadyQueueException;
 import main.java.power.Power;
 
@@ -16,11 +17,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
 public class Scheduler extends Thread{
-    private final CPU cpu = CPU.getInstance();
-    private final Loader loader = new Loader();
-
+    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private final ProcessQueue waitQueue = new ProcessQueue();
-    private Process runningProcess = new Process();
+    private Process runningProcess;
     private InterruptHandler interruptHandler = new InterruptHandler(this);
 
     public Scheduler() {
@@ -33,9 +32,17 @@ public class Scheduler extends Thread{
 
     public void init() {
         try {
-            Scanner scanner = new Scanner(new File("data/exe1.txt"));
-            this.runningProcess.load(scanner);
-            scanner.close();
+            Scanner scanner1 = new Scanner(new File("data/exe1.txt"));
+            Process process1 = new Process();
+            process1.load(new Scanner(new File("data/exe1.txt")));
+            load(process1);
+            scanner1.close();
+
+            Scanner scanner2 = new Scanner(new File("data/exe1.txt"));
+            Process process2 = new Process();
+            process2.load(new Scanner(new File("data/exe1.txt")));
+            load(process2);
+            scanner2.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -45,18 +52,16 @@ public class Scheduler extends Thread{
         System.out.println("Scheduler run() start");
         while (Power.isOn()) {
             interruptHandler.handle();
-            while (!cpu.hasInterrupt()) {
+            while (!interruptQueue.hasInterrupt()) {
+                if(runningProcess == null) runningProcess = readyQueue.dequeue();
                 runningProcess.run();
             }
         }
         System.out.println("Scheduler run() end");
     }
 
-    public void load(String processName) {
-        cpu.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_START, loader.load(processName)));
-    }
     public void load(Process process) {
-        cpu.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_START, process));
+        interruptQueue.addInterrupt(new ProcessInterrupt(EProcessInterrupt.PROCESS_START, process));
     }
 
     // critical section

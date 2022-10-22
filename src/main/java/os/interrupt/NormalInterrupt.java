@@ -1,6 +1,6 @@
-package main.java.cpu.interrupt;
+package main.java.os.interrupt;
 
-import main.java.cpu.interrupt.EInterrupt.ENormalInterrupt;
+import main.java.os.interrupt.EInterrupt.ENormalInterrupt;
 
 public class NormalInterrupt implements Interrupt{
     private final ENormalInterrupt eNormalInterrupt;

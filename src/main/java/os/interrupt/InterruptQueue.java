@@ -1,38 +1,28 @@
-package main.java.cpu;
+package main.java.os.interrupt;
 
-import main.java.cpu.interrupt.EInterrupt;
-import main.java.cpu.interrupt.Interrupt;
-import main.java.cpu.interrupt.NormalInterrupt;
+import main.java.os.Process;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.Semaphore;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class CPU {
-    private static final CPU instance = new CPU();
+public class InterruptQueue {
+    private static final InterruptQueue instance = new InterruptQueue();
+    private Semaphore interruptQueueSemaphore = new Semaphore(1, true);
+    private final Deque<Interrupt> interruptQueue = new ArrayDeque<>();
 
-    private final CPUTimer cpuTimer = CPUTimer.getInstance();
-    private CPU() {
-        System.out.println("CPU CREATED");
-    }
-
-    public static CPU getInstance() {
+    private InterruptQueue() {}
+    public static InterruptQueue getInstance() {
         return instance;
-    }
-    public void run() {
-        cpuTimer.run();
     }
 
     // Critical Section
-    private final Deque<Interrupt> interruptQueue = new ArrayDeque<>();
-    private Semaphore interruptQueueSemaphore = new Semaphore(1, true);
     public void addInterrupt(Interrupt interrupt) {
         runWithInterruptQueueSemaphore(() -> interruptQueue.offer(interrupt));
     }
-    public void addTimeOutInterrupt() {
-        runWithInterruptQueueSemaphore(() -> interruptQueue.offerFirst(new NormalInterrupt(EInterrupt.ENormalInterrupt.TIME_OUT)));
+    public void addTimeOutInterrupt(Process process) {
+        runWithInterruptQueueSemaphore(() -> interruptQueue.offerFirst(new ProcessInterrupt(EInterrupt.EProcessInterrupt.TIME_OUT, process)));
     }
     public Interrupt pollInterrupt() {
         return runWithInterruptQueueSemaphore(() -> {
@@ -41,8 +31,12 @@ public class CPU {
         });
     }
     public boolean hasInterrupt() {
-        return !interruptQueue.isEmpty();
+        return runWithInterruptQueueSemaphore(() -> !interruptQueue.isEmpty());
     }
+    public void removeAllOf(Process currProcess) {
+        runWithInterruptQueueSemaphore(() -> interruptQueue.removeIf((i) -> i instanceof ProcessInterrupt && ((ProcessInterrupt) i).getProcess() == currProcess));
+    }
+
     private <T> T runWithInterruptQueueSemaphore(Supplier<T> supplier) {
         try {
             interruptQueueSemaphore.acquire();
@@ -55,10 +49,4 @@ public class CPU {
         return null;
     }
     /////////////////////////
-
-
-    public void stop() {
-        cpuTimer.stop();
-        System.out.println("Stop CPU");
-    }
 }

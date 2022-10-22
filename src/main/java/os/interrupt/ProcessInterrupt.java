@@ -1,6 +1,6 @@
-package main.java.cpu.interrupt;
+package main.java.os.interrupt;
 
-import main.java.cpu.interrupt.EInterrupt.EProcessInterrupt;
+import main.java.os.interrupt.EInterrupt.EProcessInterrupt;
 import main.java.os.Process;
 
 public class ProcessInterrupt implements Interrupt {

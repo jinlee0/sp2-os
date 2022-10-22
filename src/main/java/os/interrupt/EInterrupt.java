@@ -1,11 +1,11 @@
-package main.java.cpu.interrupt;
+package main.java.os.interrupt;
 
 public interface EInterrupt {
     enum ENormalInterrupt implements EInterrupt{
-        TIME_OUT, NONE
+        NONE,
     }
 
     enum EProcessInterrupt implements EInterrupt {
-        IO_START, IO_COMPLETE, PROCESS_END, PROCESS_START,
+        TIME_OUT, IO_START, IO_COMPLETE, PROCESS_END, PROCESS_START,
     }
 }
