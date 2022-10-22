@@ -16,7 +16,7 @@ public class Process {
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private Timer timer;
 
-    private final static long SLEEP_MILLIS = 10L;
+    private final static long SLEEP_MILLIS = 50L;
     private final static long TIME_OUT_MILLIS = 300L;
 
     public Process() {
@@ -53,7 +53,9 @@ public class Process {
     private void executeOneLine() {
         int PC = pcb.getPC();
         String line = codeList.get(PC);
-        System.out.println("\tPC: "+ PC + ", " + line);
+        pcb.getContext().set(EContext.PC, PC + 1);
+
+        System.out.println("\tPC: "+ PC + ", " + line.split("//")[0]);
         StringTokenizer st = new StringTokenizer(line);
         EOpCode eOpCode = EOpCode.valueOf(st.nextToken().trim().toUpperCase(Locale.ROOT));
         int operand = Integer.parseInt(st.nextToken());
@@ -119,7 +121,6 @@ public class Process {
                 exeHALT();
                 break;
         }
-        pcb.getContext().set(EContext.PC, PC + 1);
     }
 
     private void exeHALT() {

@@ -6,50 +6,50 @@ stackSize 256
 heapSize 256
 .dataEnd
 .code
-LDC 0
+LDC 0 // int _3 = 0;
 STA 3
-LDC 0
+LDC 0 // int _4 = 0;
 STA 4
-LDC 1
+LDC 1 // int _5 = 1;
 STA 5
-LDC 70
+LDC 70 // int _0 = 70;
 STA 0
-LDC 80
+LDC 80 // int _1 = 80;
 STA 1
-LDC 90
+LDC 90 // int _2 = 90;
 STA 2
-LDA 0
+LDA 0 // _3 = = _0 + _1 + _2;
 ADDA 1
 ADDA 2
 STA 3
-LDA 3
+LDA 3 // _4 = _3 / 3;
 DIVC 3
 STA 4
-LDA 4
+LDA 4 // if _4 - 90 <= 0 goto 34
 SUBC 90
 BZN 25
-LDC 1
+LDC 1 // _5 = 1
 STA 5
-BR 45
-LDA 4
+BR 45 // goto 54
+LDA 4 // if _4 - 80 <= 0 goto 40
 SUBC 80
 BZN 31
-LDC 2
+LDC 2 // _5 = 2
 STA 5
-BR 45
-LDA 4
+BR 45 // goto 54
+LDA 4 // if _4 - 70 <= 0 goto 46
 SUBC 70
 BZN 37
-LDC 3
+LDC 3 // _5 = 3
 STA 5
-BR 45
-LDA 4
+BR 45 // goto 54
+LDA 4 // if _4 - 60 <= 0 goto 52
 SUBC 60
 BZN 43
-LDC 4
+LDC 4 // _5 = 4
 STA 5
-BR 45
-LDC 5
+BR 45 // goto 54
+LDC 5 // _5 = 5
 STA 5
 HALT 0
 .codeEnd
