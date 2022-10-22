@@ -21,6 +21,10 @@ public class InterruptHandler {
         Interrupt interrupt = interruptQueue.pollInterrupt();
         EInterrupt eInterrupt = interrupt.getEInterrupt();
         System.out.println("Handle Interrupt: " + eInterrupt);
+        handle(interrupt);
+    }
+
+    private void handle(Interrupt interrupt) {
         if (interrupt instanceof ProcessInterrupt) handle((ProcessInterrupt) interrupt);
         else if (interrupt instanceof NormalInterrupt) handle((NormalInterrupt) interrupt);
     }
@@ -55,14 +59,10 @@ public class InterruptHandler {
     }
 
     private void handleProcessStart(ProcessInterrupt interrupt) {
-        Process process = interrupt.getProcess();
-        scheduler.enReadyQueue(process);
+        scheduler.enReadyQueue(interrupt.getProcess());
     }
 
     private void handleProcessEnd(ProcessInterrupt interrupt) {
-        if (scheduler.isReadyQueueEmpty()) {
-            throw new NoMoreProcessException(); // 더 이상 실행할 프로세스 없음
-        }
         Process interruptedProcess = interrupt.getProcess();
         Process currProcess = scheduler.getRunningProcess();
         if (interruptedProcess == currProcess) {
@@ -84,4 +84,10 @@ public class InterruptHandler {
         Process nextProcess = scheduler.deReadyQueue();
         scheduler.setRunningProcess(nextProcess);
     }
+
+    public void handleLatestInterrupt() {
+        Interrupt interrupt = interruptQueue.pollLast();
+        handle(interrupt);
+    }
+
 }
