@@ -24,8 +24,10 @@ public class UI extends Thread {
         // console command
         // "r fileName" -> execute fileName
         // "q" -> quit program
+        System.out.println("UI run");
         try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
             while (true) {
+                System.out.print("UI >> ");
                 StringTokenizer st = new StringTokenizer(br.readLine());
                 String command = st.nextToken();
                 switch (command) {
@@ -71,26 +73,22 @@ public class UI extends Thread {
     }
 
     private void terminateProcess(String token) {
-        new Thread(() -> {
-            try {
-                scheduler.terminate(Long.parseLong(token));
-                System.out.println("Process_" + token + " is terminated");
-            } catch (NumberFormatException e) {
-                System.out.println("Serial number must be long number");
-            } catch (ProcessNotFound e) {
-                System.out.println("Process_" + token + " is not found");
-            }
-        }).start();
+        try {
+            scheduler.terminate(Long.parseLong(token));
+            System.out.println("Process_" + token + " is terminated");
+        } catch (NumberFormatException e) {
+            System.out.println("Serial number must be long number");
+        } catch (ProcessNotFound e) {
+            System.out.println("Process_" + token + " is not found");
+        }
     }
 
     private void loadEXE(String token) {
-        new Thread(() -> {
-            try {
-                scheduler.load(loader.load(token));
-                System.out.println(token + " is loaded");
-            } catch (FileNotFoundException e) {
-                System.out.println("File " + token + " is not found");
-            }
-        }).start();
+        try {
+            scheduler.load(loader.load(token));
+            System.out.println(token + " is loaded");
+        } catch (FileNotFoundException e) {
+            System.out.println("File " + token + " is not found");
+        }
     }
 }
