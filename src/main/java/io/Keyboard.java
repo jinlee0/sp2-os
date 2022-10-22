@@ -1,21 +1,11 @@
 package main.java.io;
 
 import main.java.os.Process;
-import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
-import main.java.utils.MPrinter;
-import main.java.utils.MScanner;
+import main.java.utils.SScanner;
 
-import java.util.Scanner;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-public class Keyboard extends Thread{
+public class Keyboard extends MyIO{
     private static final Keyboard instance = new Keyboard();
-    private final BlockingQueue<Task> tasks = new LinkedBlockingQueue<>(KEYBOARD_BUFFER_SIZE);
-    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
-
-    private final static int KEYBOARD_BUFFER_SIZE = 10;
 
     private Keyboard(){}
     public static Keyboard getInstance() {
@@ -24,8 +14,7 @@ public class Keyboard extends Thread{
 
     @Override
     public void run() {
-        MScanner scanner = MScanner.getInstance();
-        MPrinter printer = MPrinter.getInstance();
+        SScanner scanner = SScanner.getInstance();
         while (Power.isOn()) {
             try {
                 Task task = tasks.take();
@@ -37,7 +26,7 @@ public class Keyboard extends Thread{
                 } catch (NumberFormatException e) {
                     add(task.getOwner());
                 }
-                Thread.sleep(1000L);
+                Thread.sleep(IO_DELAY);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -49,37 +38,6 @@ public class Keyboard extends Thread{
             tasks.put(new Task(process, null));
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
-    }
-
-    public class Task {
-        private Process owner;
-        private Object value;
-
-        public Task(Process owner, Object value) {
-            this.owner = owner;
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return "Task{" +
-                    "owner=" + owner +
-                    ", value=" + value +
-                    '}';
-        }
-
-        public Process getOwner() {
-            return owner;
-        }
-        public void setOwner(Process owner) {
-            this.owner = owner;
-        }
-        public Object getValue() {
-            return value;
-        }
-        public void setValue(Object value) {
-            this.value = value;
         }
     }
 }

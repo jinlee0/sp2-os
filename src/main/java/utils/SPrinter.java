@@ -4,18 +4,18 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-public class MPrinter {
+public class SPrinter {
     private BufferedWriter br = new BufferedWriter(new OutputStreamWriter(System.out));
-    private static final MPrinter instance = new MPrinter();
+    private static final SPrinter instance = new SPrinter();
 
-    public static MPrinter getInstance() {
+    public static SPrinter getInstance() {
         return instance;
     }
     public void println(String s) {
         print(s + System.lineSeparator());
     }
     public void print(String s) {
-        MScanner scanner = MScanner.getInstance();
+        SScanner scanner = SScanner.getInstance();
         try {
             scanner.acquire();
             br.write(s);

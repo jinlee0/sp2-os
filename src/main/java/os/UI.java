@@ -2,8 +2,8 @@ package main.java.os;
 
 import main.java.exception.ProcessNotFound;
 import main.java.utils.Logger;
-import main.java.utils.MPrinter;
-import main.java.utils.MScanner;
+import main.java.utils.SPrinter;
+import main.java.utils.SScanner;
 
 import java.io.FileNotFoundException;
 import java.util.NoSuchElementException;
@@ -12,8 +12,8 @@ import java.util.StringTokenizer;
 public class UI extends Thread {
     private final Scheduler scheduler;
     private final Loader loader;
-    private final MPrinter printer = MPrinter.getInstance();
-    private final MScanner scanner = MScanner.getInstance();
+    private final SPrinter printer = SPrinter.getInstance();
+    private final SScanner scanner = SScanner.getInstance();
 
     public UI(Scheduler scheduler) {
         this.loader = new Loader();
@@ -85,7 +85,7 @@ public class UI extends Thread {
     }
 
     private void loadEXE(String token) {
-        synchronized (MScanner.getInstance()) {
+        synchronized (SScanner.getInstance()) {
             try {
                 scheduler.load(loader.load(token));
                 printlnln(token + " is loaded");
