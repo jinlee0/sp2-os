@@ -6,14 +6,10 @@ import java.util.Scanner;
 
 public class Loader {
 
-    public Process load(String exeName) {
-        try (Scanner scanner = new Scanner(new File("data/" + exeName))) {
-            Process process = new Process();
-            process.load(scanner);
-            return process;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public Process load(String exeName) throws FileNotFoundException {
+        Scanner scanner = new Scanner(new File("data/" + exeName));
+        Process process = new Process();
+        process.load(scanner);
+        return process;
     }
 }

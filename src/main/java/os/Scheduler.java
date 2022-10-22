@@ -1,6 +1,7 @@
 package main.java.os;
 
 import main.java.exception.EmptyReadyQueueException;
+import main.java.exception.ProcessNotFound;
 import main.java.os.interrupt.InterruptHandler;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
@@ -77,6 +78,12 @@ public class Scheduler extends Thread{
     public void removeFromReadyQueue(Process interruptedProcess) {
         readyQueue.remove(interruptedProcess);
     }
+    public Process findBySerialNumber(long serialNumber) {
+        for (Process process : readyQueue) {
+            if(process.getSerialNumber() == serialNumber) return process;
+        }
+        return null;
+    }
     /////////////////////
 
     public Process getRunningProcess() {
@@ -85,6 +92,14 @@ public class Scheduler extends Thread{
 
     public void setRunningProcess(Process runningProcess) {
         this.runningProcess = runningProcess;
+    }
+
+    public void terminate(long processSerialNumber) {
+        Process target = null;
+        if(runningProcess.getSerialNumber() == processSerialNumber) target = runningProcess;
+        else target = findBySerialNumber(processSerialNumber);
+        if(target == null) throw new ProcessNotFound();
+        interruptQueue.addProcessEnd(target);
     }
 
     public class ProcessQueue {

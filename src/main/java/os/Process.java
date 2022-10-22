@@ -237,6 +237,9 @@ public class Process {
         }
     }
 
+    public int getSerialNumber() {
+        return serialNumber;
+    }
     public int getCodeSize() {
         return pcb.context.get(EContext.CS);
     }
