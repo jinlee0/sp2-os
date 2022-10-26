@@ -261,7 +261,7 @@ public class Process {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Process_" + serialNumber + "의 종료 직전 상태").append(System.lineSeparator());
+        sb.append("Process_").append(serialNumber).append("의 종료 직전 상태").append(System.lineSeparator());
         sb.append("\t").append("PCB").append(System.lineSeparator());
         for (EContext eContext : EContext.values()) {
             sb.append("\t\t").append(eContext).append(": ").append(pcb.context.get(eContext)).append(System.lineSeparator());
@@ -298,7 +298,7 @@ public class Process {
 
 
     public class PCB {
-        private Context context = new Context();
+        private final Context context = new Context();
 
         private int pid;
         // Account
@@ -331,7 +331,7 @@ public class Process {
         RUNNING, READY, WAITING, SUSPENDED, NONE
     }
 
-    private class Context {
+    private static class Context {
         private final Map<EContext, Integer> contextMap = new HashMap<>();
 
         public Context() {
@@ -384,7 +384,7 @@ public class Process {
     public enum EIOCode {
         WRITE(0), READ(1);
 
-        private int code;
+        private final int code;
 
         EIOCode(int code) {
             this.code = code;

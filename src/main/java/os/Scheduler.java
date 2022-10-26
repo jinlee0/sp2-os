@@ -14,7 +14,7 @@ public class Scheduler extends Thread{
     private final BlockingQueue<Process> readyQueue = new LinkedBlockingQueue<>(READY_QUEUE_MAX_SIZE);
     private final BlockingQueue<Process> waitQueue = new LinkedBlockingQueue<>(READY_QUEUE_MAX_SIZE);
     private Process runningProcess;
-    private InterruptHandler interruptHandler = new InterruptHandler(this);
+    private final InterruptHandler interruptHandler = new InterruptHandler(this);
 
     private static final int READY_QUEUE_MAX_SIZE = 10;
 
@@ -88,7 +88,7 @@ public class Scheduler extends Thread{
     }
 
     public void terminate(long processSerialNumber) {
-        Process target = null;
+        Process target;
         if(runningProcess != null && runningProcess.getSerialNumber() == processSerialNumber) target = runningProcess;
         else target = findBySerialNumber(processSerialNumber);
         if(target == null) throw new ProcessNotFound();

@@ -28,7 +28,7 @@ public class UI extends Thread {
         printlnln("UI run");
         while (true) {
             StringTokenizer st = new StringTokenizer(scanner.nextLine("UI >> "));
-            String command = null;
+            String command;
             try {
                 command = st.nextToken();
             } catch (Exception e) {

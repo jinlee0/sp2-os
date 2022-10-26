@@ -16,8 +16,8 @@ public abstract class MyIO extends Thread{
     public abstract void run();
 
     public static class Task {
-        private Process owner;
-        private Object value;
+        private final Process owner;
+        private final Object value;
 
         public Task(Process owner, Object value) {
             this.owner = owner;
