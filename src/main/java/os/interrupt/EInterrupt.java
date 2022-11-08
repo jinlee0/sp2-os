@@ -6,6 +6,6 @@ public interface EInterrupt {
     }
 
     enum EProcessInterrupt implements EInterrupt {
-        TIME_OUT, IO_START, IO_COMPLETE, PROCESS_END, PROCESS_START,
+        TIME_OUT, READ_START, READ_COMPLETE, PROCESS_END, PROCESS_START, WRITE_START, WRITE_COMPLETE,
     }
 }

@@ -29,7 +29,8 @@ public class Logger {
     public static void startAutoFlush() {
         stopAutoFlush();
         autoFlushTimer = new Timer();
-        autoFlushTimer.schedule(new TimerTask() {
+        autoFlushTimer.schedule
+                (new TimerTask() {
             @Override
             public void run() {
                 try {

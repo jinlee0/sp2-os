@@ -1,6 +1,7 @@
 package main.java.os;
 
 import main.java.exception.ProcessNotFound;
+import main.java.os.interrupt.InterruptQueue;
 import main.java.utils.Logger;
 import main.java.utils.SPrinter;
 import main.java.utils.SScanner;
@@ -12,6 +13,7 @@ import java.util.StringTokenizer;
 public class UI extends Thread {
     private final Scheduler scheduler;
     private final Loader loader;
+    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private final SPrinter printer = SPrinter.getInstance();
     private final SScanner scanner = SScanner.getInstance();
 
@@ -75,7 +77,9 @@ public class UI extends Thread {
 
     private void terminateProcess(String token) {
         try {
-            scheduler.terminate(Long.parseLong(token));
+            Process process = scheduler.findBySerialNumber(Long.parseLong(token));
+            if(process == null) throw new ProcessNotFound();
+            interruptQueue.addProcessEnd(process);
             printlnln("Process_" + token + " is terminated");
         } catch (NumberFormatException e) {
             printlnln("Serial number must be long number");
@@ -85,13 +89,11 @@ public class UI extends Thread {
     }
 
     private void loadEXE(String token) {
-        synchronized (SScanner.getInstance()) {
-            try {
-                scheduler.load(loader.load(token));
-                printlnln(token + " is loaded");
-            } catch (FileNotFoundException e) {
-                printlnln("File " + token + " is not found");
-            }
+        try {
+            interruptQueue.addProcessStart(loader.load(token));
+            printlnln(token + " is loaded");
+        } catch (FileNotFoundException e) {
+            printlnln("File " + token + " is not found");
         }
     }
 

@@ -19,7 +19,7 @@ public class Monitor extends MyIO{
                 Task task = tasks.take();
                 Process owner = task.getOwner();
                 SPrinter.getInstance().println("Process_" + owner.getSerialNumber() + " >> Screen >> " + task.getValue() + System.lineSeparator());
-                interruptQueue.addIOComplete(owner);
+                interruptQueue.addWriteComplete(owner);
                 Thread.sleep(IO_DELAY);
             } catch (InterruptedException e) {
                 e.printStackTrace();

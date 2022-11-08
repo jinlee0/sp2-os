@@ -141,13 +141,14 @@ public class Process {
         // IO 마치면 인터럽트 생김
         try {
             timer.cancel();
-            interruptQueue.addIOStart(this);
             EIOCode eIOCode = EIOCode.of(operand);
             switch (eIOCode) {
                 case WRITE:
+                    interruptQueue.addWriteStart(this);
                     Monitor.getInstance().add(this, pcb.getAC());
                     break;
                 case READ:
+                    interruptQueue.addReadStart(this);
                     Keyboard.getInstance().add(this);
                     break;
             }
