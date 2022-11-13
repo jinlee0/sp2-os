@@ -25,7 +25,6 @@ public class Process {
 
     public Process() {
         serialNumber = SERIAL_NUMBER++;
-        pcb.pid = serialNumber;
     }
 
     public void run() {
@@ -275,18 +274,6 @@ public class Process {
     public int getSerialNumber() {
         return serialNumber;
     }
-    public int getCodeSize() {
-        return pcb.context.get(EContext.CS);
-    }
-    public int getDataSize() {
-        return pcb.context.get(EContext.DS);
-    }
-    public int getStackSize() {
-        return pcb.context.get(EContext.SS);
-    }
-    public int getHeapSize() {
-        return pcb.context.get(EContext.HS);
-    }
 
     public void setAC(int value) {
         pcb.setAC(value);
@@ -319,13 +306,8 @@ public class Process {
     public class PCB {
         private final Context context = new Context();
 
-        private int pid;
-        // Account
-        private int oid;
         // Status
         private ProcessStatus eStatus = ProcessStatus.NONE;
-        // IO Status Information
-        private List<?> ioDevices;
 
         public Context getContext() {
             return context;
@@ -371,7 +353,6 @@ public class Process {
         AC,
         //    PROCESS_ID,
         CS, DS, SS, HS,
-        ;
     }
 
     private enum OpCode {
@@ -396,7 +377,6 @@ public class Process {
         BZP,
         BZN,
         INT
-        ;
     }
     public enum IOCode {
         WRITE(0), READ(1);
