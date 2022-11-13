@@ -14,12 +14,12 @@ import java.util.*;
 public class Process {
     private final PCB pcb = new PCB();
     private final int serialNumber;
-    private static int SERIAL_NUMBER = 0;
     private final List<String> codeList = new ArrayList<>();
     private final Map<Integer, Integer> memory = new HashMap<>();
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private Timer timer;
 
+    private static int SERIAL_NUMBER = 0;
     private final static long SLEEP_MILLIS = 50L;
     private final static long TIME_OUT_MILLIS = 300L;
 
@@ -340,15 +340,12 @@ public class Process {
                 contextMap.put(eRegister, 0);
             }
         }
-
         public int get(EContext eRegister) {
             return this.contextMap.get(eRegister);
         }
-
         public void set(EContext key, int value) {
             this.contextMap.put(key, value);
         }
-
     }
     private enum EContext {
         PC,
@@ -358,6 +355,7 @@ public class Process {
         CS, DS, SS, HS,
         ;
     }
+
     private enum EOpCode {
         HALT,
         LDC,
@@ -390,6 +388,7 @@ public class Process {
         EIOCode(int code) {
             this.code = code;
         }
+
         static EIOCode of(int code) {
             for (EIOCode value : values()) {
                 if(value.code == code) return value;

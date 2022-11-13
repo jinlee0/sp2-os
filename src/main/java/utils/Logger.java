@@ -12,7 +12,7 @@ public class Logger {
 
     public static void add(String msg) {
         try {
-            bw.write(msg + System.lineSeparator());
+            bw.write("LOGGER >> " + msg + System.lineSeparator());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -29,8 +29,7 @@ public class Logger {
     public static void startAutoFlush() {
         stopAutoFlush();
         autoFlushTimer = new Timer();
-        autoFlushTimer.schedule
-                (new TimerTask() {
+        autoFlushTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 try {
