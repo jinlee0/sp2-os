@@ -14,7 +14,7 @@ import java.util.*;
 public class Process {
     private final PCB pcb = new PCB();
     private final int serialNumber;
-    private final List<String> codeList = new ArrayList<>();
+    private final List<Instruction> codeList = new ArrayList<>();
     private final Map<Integer, Integer> memory = new HashMap<>();
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private Timer timer;
@@ -31,8 +31,8 @@ public class Process {
     public void run() {
 //        System.out.println("Process " + serialNumber);
         Logger.add("Process" + serialNumber);
-        if (pcb.getStatus() != EStatus.RUNNING) {
-            pcb.setStatus(EStatus.RUNNING);
+        if (pcb.getStatus() != ProcessStatus.RUNNING) {
+            pcb.setStatus(ProcessStatus.RUNNING);
             timer = new Timer();
             Process thisProcess = this;
             timer.schedule(new TimerTask() {
@@ -51,25 +51,23 @@ public class Process {
     }
 
     public void ready() {
-        pcb.setStatus(EStatus.READY);
+        pcb.setStatus(ProcessStatus.READY);
         timer.cancel();
     }
 
     public void waiting() {
-        pcb.setStatus(EStatus.WAITING);
+        pcb.setStatus(ProcessStatus.WAITING);
     }
 
     private void executeOneLine() {
         int PC = pcb.getPC();
-        String line = codeList.get(PC);
+        Instruction instruction = codeList.get(PC);
         pcb.getContext().set(EContext.PC, PC + 1);
+        Logger.add("\tPC: "+ PC + ", " + instruction);
 
-//        System.out.println("\tPC: "+ PC + ", " + line.split("//")[0]);
-        Logger.add("\tPC: "+ PC + ", " + line.split("//")[0]);
-        StringTokenizer st = new StringTokenizer(line);
-        EOpCode eOpCode = EOpCode.valueOf(st.nextToken().trim().toUpperCase(Locale.ROOT));
-        int operand = Integer.parseInt(st.nextToken());
-        switch (eOpCode) {
+        OpCode opCode = instruction.getOpCode();
+        int operand = instruction.getOperand();
+        switch (opCode) {
             case LDC:
                 exeLDC(operand);
                 break;
@@ -141,7 +139,7 @@ public class Process {
         // IO 마치면 인터럽트 생김
         try {
             timer.cancel();
-            EIOCode eIOCode = EIOCode.of(operand);
+            IOCode eIOCode = IOCode.of(operand);
             switch (eIOCode) {
                 case WRITE:
                     interruptQueue.addWriteStart(this);
@@ -241,7 +239,7 @@ public class Process {
             if(!scanner.hasNextLine()) throw new InvalidExeFormatException();
             String line = scanner.nextLine();
             if (line.equals(".codeEnd")) break;
-            codeList.add(line);
+            codeList.add(new Instruction(line));
         }
     }
 
@@ -289,14 +287,34 @@ public class Process {
     public int getHeapSize() {
         return pcb.context.get(EContext.HS);
     }
-    public List<String> getCodeList() {
-        return codeList;
-    }
 
     public void setAC(int value) {
         pcb.setAC(value);
     }
 
+    private class Instruction {
+        private final OpCode opCode;
+        private final int operand;
+
+        public Instruction(String line) {
+            StringTokenizer st = new StringTokenizer(line);
+            opCode = OpCode.valueOf(st.nextToken().trim().toUpperCase(Locale.ROOT));
+            operand = Integer.parseInt(st.nextToken());
+        }
+        public OpCode getOpCode() {
+            return opCode;
+        }
+        public int getOperand() {
+            return operand;
+        }
+        @Override
+        public String toString() {
+            return "Instruction{" +
+                    "opCode=" + opCode +
+                    ", operand=" + operand +
+                    '}';
+        }
+    }
 
     public class PCB {
         private final Context context = new Context();
@@ -305,7 +323,7 @@ public class Process {
         // Account
         private int oid;
         // Status
-        private EStatus eStatus = EStatus.NONE;
+        private ProcessStatus eStatus = ProcessStatus.NONE;
         // IO Status Information
         private List<?> ioDevices;
 
@@ -320,15 +338,15 @@ public class Process {
         public void setPC(int address) {
             context.set(EContext.PC, address);
         }
-        public EStatus getStatus() {
+        public ProcessStatus getStatus() {
             return eStatus;
         }
-        public void setStatus(EStatus eStatus) {
+        public void setStatus(ProcessStatus eStatus) {
             this.eStatus = eStatus;
         }
     }
 
-    private enum EStatus {
+    private enum ProcessStatus {
         RUNNING, READY, WAITING, SUSPENDED, NONE
     }
 
@@ -356,7 +374,7 @@ public class Process {
         ;
     }
 
-    private enum EOpCode {
+    private enum OpCode {
         HALT,
         LDC,
         LDA,
@@ -380,17 +398,17 @@ public class Process {
         INT
         ;
     }
-    public enum EIOCode {
+    public enum IOCode {
         WRITE(0), READ(1);
 
         private final int code;
 
-        EIOCode(int code) {
+        IOCode(int code) {
             this.code = code;
         }
 
-        static EIOCode of(int code) {
-            for (EIOCode value : values()) {
+        static IOCode of(int code) {
+            for (IOCode value : values()) {
                 if(value.code == code) return value;
             }
             throw new InvalidInterruptCode();
