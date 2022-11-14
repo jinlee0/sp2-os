@@ -28,7 +28,6 @@ public class Process {
     }
 
     public void run() {
-//        System.out.println("Process " + serialNumber);
         Logger.add("Process" + serialNumber);
         if (pcb.getStatus() != ProcessStatus.RUNNING) {
             pcb.setStatus(ProcessStatus.RUNNING);
@@ -157,7 +156,6 @@ public class Process {
     private void exeHALT() {
         interruptQueue.addProcessEnd(this);
         Logger.add(this.toString());
-//        System.out.println(this);
     }
 
     private void exeBZP(int operand) {
@@ -226,7 +224,8 @@ public class Process {
         if(!scanner.next().equals(".program")) throw new InvalidExeFormatException();
         while (true) {
             if(!scanner.hasNextLine()) throw new InvalidExeFormatException();
-            String line = scanner.nextLine();
+            String line = scanner.nextLine().trim();
+            if(line.equals("") || line.startsWith("//")) continue;
             if(line.equals(".end")) break;
             if(line.equals(".data")) loadDataSegment(scanner);
             if(line.equals(".code")) loadCodeSegment(scanner);
@@ -237,6 +236,7 @@ public class Process {
         while (true) {
             if(!scanner.hasNextLine()) throw new InvalidExeFormatException();
             String line = scanner.nextLine();
+            if(line.equals("") || line.startsWith("//")) continue;
             if (line.equals(".codeEnd")) break;
             codeList.add(new Instruction(line));
         }
@@ -246,6 +246,7 @@ public class Process {
         while (true) {
             if(!scanner.hasNext()) throw new InvalidExeFormatException();
             String token = scanner.next();
+            if(token.equals("") || token.startsWith("//")) continue;
             if(token.equals(".dataEnd")) return;
             int size = Integer.parseInt(scanner.next());
             EContext target = null;

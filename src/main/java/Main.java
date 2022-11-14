@@ -13,9 +13,9 @@ public class Main {
     public static void main(String[] args) {
         Scheduler scheduler = new Scheduler(new LinkedBlockingQueue<>());
         scheduler.start();
-//        UI ui = new UI(scheduler);
-//        ui.start();
-        new GUIMain().run();
+        UI ui = new UI(scheduler);
+        ui.start();
+//        new GUIMain().run();
         Monitor.getInstance().start();
         Keyboard.getInstance().start();
     }

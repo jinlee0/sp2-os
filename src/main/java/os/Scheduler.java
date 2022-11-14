@@ -32,8 +32,8 @@ public class Scheduler extends Thread{
     public void run() {
         Logger.add("Scheduler run() start");
         first: while (Power.isOn()) {
-            interruptHandler.handle();
-            while (!interruptQueue.hasInterrupt()) {
+            if (interruptQueue.hasInterrupt()) interruptHandler.handle();
+            else {
                 if(runningProcess == null) {
                     runningProcess = deReadyQueue();
                     if(runningProcess==null) continue first;
