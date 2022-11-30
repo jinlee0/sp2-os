@@ -1,14 +1,13 @@
 package main.java.os;
 
-import main.java.exception.ProcessNotFound;
 import main.java.os.interrupt.*;
 import main.java.power.Power;
 import main.java.utils.Logger;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class Scheduler extends Thread{
     // components
@@ -31,12 +30,12 @@ public class Scheduler extends Thread{
 
     public void run() {
         Logger.add("Scheduler run() start");
-        first: while (Power.isOn()) {
+        while (Power.isOn()) {
             if (interruptQueue.hasInterrupt()) interruptHandler.handle();
             else {
-                if(runningProcess == null) {
+                if (runningProcess == null) {
                     runningProcess = deReadyQueue();
-                    if(runningProcess==null) continue first;
+                    if (runningProcess == null) continue;
                 }
                 runningProcess.run();
             }
@@ -138,7 +137,7 @@ public class Scheduler extends Thread{
                     break;
                 case READ_START:
                 case WRITE_START:
-                    handleIOStart(interrupt);
+                    handleIOStart();
                     break;
                 case READ_COMPLETE:
                 case WRITE_COMPLETE:
@@ -155,7 +154,7 @@ public class Scheduler extends Thread{
             scheduler.enReadyQueue(process);
         }
 
-        private void handleIOStart(ProcessInterrupt interrupt) {
+        private void handleIOStart() {
             Process currProcess = scheduler.getRunningProcess();
             currProcess.waiting();
             scheduler.enWaitQueue(currProcess);
@@ -189,11 +188,6 @@ public class Scheduler extends Thread{
             scheduler.enReadyQueue(currProcess);
             Process nextProcess = scheduler.deReadyQueue();
             scheduler.setRunningProcess(nextProcess);
-        }
-
-        public void handleLatestInterrupt() {
-            Interrupt interrupt = interruptQueue.pollLast();
-            handle(interrupt);
         }
 
     }

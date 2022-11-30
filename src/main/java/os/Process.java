@@ -14,7 +14,9 @@ import java.util.*;
 public class Process {
     private final PCB pcb = new PCB();
     private final int serialNumber;
-    private final List<Instruction> codeList = new ArrayList<>();
+    private final List<Instruction> codeSegment = new ArrayList<>();
+    private final Stack<?> stackSegment = new Stack<>();
+    private final Map<Integer, Integer> headSegment = new HashMap<>();
     private final Map<Integer, Integer> memory = new HashMap<>();
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private Timer timer;
@@ -59,8 +61,8 @@ public class Process {
 
     private void executeOneLine() {
         int PC = pcb.getPC();
-        Instruction instruction = codeList.get(PC);
-        pcb.getContext().set(EContext.PC, PC + 1);
+        Instruction instruction = codeSegment.get(PC);
+        pcb.getContext().set(ERegister.PC, PC + 1);
         Logger.add("\tPC: "+ PC + ", " + instruction);
 
         OpCode opCode = instruction.getOpCode();
@@ -133,7 +135,7 @@ public class Process {
     }
 
     private void exeINT(int operand) {
-        // process를 웨이팅 큐로
+        // process 를 웨이팅 큐로
         // IO 마치면 인터럽트 생김
         try {
             timer.cancel();
@@ -213,7 +215,7 @@ public class Process {
         pcb.setAC(loadMemory(operand));
     }
     private void exeLDC(int operand) {
-        pcb.context.set(EContext.AC, operand);
+        pcb.context.set(ERegister.AC, operand);
     }
     private Integer loadMemory(int operand) {
         Integer value = memory.get(operand);
@@ -231,17 +233,15 @@ public class Process {
             if(line.equals(".code")) loadCodeSegment(scanner);
         }
     }
-
     private void loadCodeSegment(Scanner scanner) {
         while (true) {
             if(!scanner.hasNextLine()) throw new InvalidExeFormatException();
             String line = scanner.nextLine();
             if(line.equals("") || line.startsWith("//")) continue;
             if (line.equals(".codeEnd")) break;
-            codeList.add(new Instruction(line));
+            codeSegment.add(new Instruction(line));
         }
     }
-
     private void loadDataSegment(Scanner scanner) {
         while (true) {
             if(!scanner.hasNext()) throw new InvalidExeFormatException();
@@ -249,11 +249,11 @@ public class Process {
             if(token.equals("") || token.startsWith("//")) continue;
             if(token.equals(".dataEnd")) return;
             int size = Integer.parseInt(scanner.next());
-            EContext target = null;
-            if(token.equals("codeSize")) target = EContext.CS;
-            if(token.equals("dataSize")) target = EContext.DS;
-            if(token.equals("stackSize")) target = EContext.SS;
-            if(token.equals("heapSize")) target = EContext.HS;
+            ERegister target = null;
+            if(token.equals("codeSize")) target = ERegister.CS;
+            if(token.equals("dataSize")) target = ERegister.DS;
+            if(token.equals("stackSize")) target = ERegister.SS;
+            if(token.equals("heapSize")) target = ERegister.HS;
             pcb.context.set(target, size);
         }
     }
@@ -262,8 +262,8 @@ public class Process {
         StringBuilder sb = new StringBuilder();
         sb.append("Process_").append(serialNumber).append("의 종료 직전 상태").append(System.lineSeparator());
         sb.append("\t").append("PCB").append(System.lineSeparator());
-        for (EContext eContext : EContext.values()) {
-            sb.append("\t\t").append(eContext).append(": ").append(pcb.context.get(eContext)).append(System.lineSeparator());
+        for (ERegister eRegister : ERegister.values()) {
+            sb.append("\t\t").append(eRegister).append(": ").append(pcb.context.get(eRegister)).append(System.lineSeparator());
         }
         sb.append("\t").append("Memory").append(System.lineSeparator());
         for (Integer integer : memory.keySet()) {
@@ -280,7 +280,7 @@ public class Process {
         pcb.setAC(value);
     }
 
-    private class Instruction {
+    private static class Instruction {
         private final OpCode opCode;
         private final int operand;
 
@@ -304,7 +304,7 @@ public class Process {
         }
     }
 
-    public class PCB {
+    public static class PCB {
         private final Context context = new Context();
 
         // Status
@@ -314,12 +314,12 @@ public class Process {
             return context;
         }
         public int getPC() {
-            return context.get(EContext.PC);
+            return context.get(ERegister.PC);
         }
-        public int getAC() { return context.get(EContext.AC);}
-        public void setAC(int value) { context.set(EContext.AC, value);}
+        public int getAC() { return context.get(ERegister.AC); }
+        public void setAC(int value) { context.set(ERegister.AC, value); }
         public void setPC(int address) {
-            context.set(EContext.PC, address);
+            context.set(ERegister.PC, address);
         }
         public ProcessStatus getStatus() {
             return eStatus;
@@ -334,21 +334,21 @@ public class Process {
     }
 
     private static class Context {
-        private final Map<EContext, Integer> contextMap = new HashMap<>();
+        private final Map<ERegister, Integer> contextMap = new HashMap<>();
 
         public Context() {
-            for (EContext eRegister : EContext.values()) {
+            for (ERegister eRegister : ERegister.values()) {
                 contextMap.put(eRegister, 0);
             }
         }
-        public int get(EContext eRegister) {
+        public int get(ERegister eRegister) {
             return this.contextMap.get(eRegister);
         }
-        public void set(EContext key, int value) {
+        public void set(ERegister key, int value) {
             this.contextMap.put(key, value);
         }
     }
-    private enum EContext {
+    private enum ERegister {
         PC,
         //    IR, MBR, MAR,
         AC,
@@ -379,6 +379,7 @@ public class Process {
         BZN,
         INT
     }
+
     public enum IOCode {
         WRITE(0), READ(1);
 

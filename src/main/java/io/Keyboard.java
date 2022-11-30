@@ -22,6 +22,8 @@ public class Keyboard extends MyIO{
                     Process owner = task.getOwner();
                     int buffer = Integer.parseInt(scanner.nextLine("Process_" + owner.getSerialNumber() + " >> " + "Keyboard >> "));
                     owner.setAC(buffer);
+//                    KeyboardTask task = (KeyboardTask) task.getValue()
+//                    owner.setMemory(task.getAddress(), task.getValue());
                     interruptQueue.addReadComplete(owner);
                 } catch (NumberFormatException e) {
                     add(task.getOwner());
