@@ -6,25 +6,25 @@ stackSize 256
 heapSize 256
 .dataEnd
 .code
-LDC 0 // int i=0;
+LDC 0   // int i=0;
 STA 0
-LDC 0 // int sum = 0;
+LDC 0   // int sum = 0;
 STA 1
-INT 1 // int count = readInt();
-STA 2
-LDA 0 // while(i<count)
+PUSH 2  // memory address to store
+INT 1   // int count = readInt();
+LDA 0   // while(i<count) whileStart:
 SUBA 2
-BZP 18
-INT 1 // value = readInt();
-STA 3
-LDA 1 // sum = sum + value;
+BZP 36  // to whileEnd
+PUSH 3
+INT 1   // value = readInt();
+LDA 1   // sum = sum + value;
 ADDA 3
 STA 1
-LDA 0 // i = i + 1;
+LDA 0   // i = i + 1;
 ADDC 1
 STA 0
-BR 6
-LDA 1
+BR 24   // to whileStart
+PUSH 1  // whileEnd:
 INT 0
 HALT 0
 .codeEnd

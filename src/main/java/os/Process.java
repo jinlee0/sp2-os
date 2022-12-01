@@ -4,8 +4,6 @@ package main.java.os;
 import main.java.exception.CannotLoadUninitializedMemory;
 import main.java.exception.InvalidExeFormatException;
 import main.java.exception.InvalidInterruptCode;
-import main.java.io.Keyboard;
-import main.java.io.Monitor;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.utils.Logger;
 
@@ -15,7 +13,7 @@ public class Process {
     private final PCB pcb = new PCB();
     private final int serialNumber;
     private final List<Instruction> codeSegment = new ArrayList<>();
-    private final Stack<?> stackSegment = new Stack<>();
+    private final Stack<Integer> stackSegment = new Stack<>();
     private final Map<Integer, Integer> headSegment = new HashMap<>();
     private final Map<Integer, Integer> memory = new HashMap<>();
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
@@ -128,10 +126,17 @@ public class Process {
             case INT:
                 exeINT(operand);
                 break;
+            case PUSH:
+                exePUSH(operand);
+                break;
             case HALT:
                 exeHALT();
                 break;
         }
+    }
+
+    private void exePUSH(int operand) {
+        stackSegment.push(operand);
     }
 
     private void exeINT(int operand) {
@@ -143,13 +148,14 @@ public class Process {
             switch (eIOCode) {
                 case WRITE:
                     interruptQueue.addWriteStart(this);
-                    Monitor.getInstance().add(this, pcb.getAC());
+//                    Monitor.getInstance().add(this);
                     break;
                 case READ:
                     interruptQueue.addReadStart(this);
-                    Keyboard.getInstance().add(this);
+//                    Keyboard.getInstance().add(this);
                     break;
             }
+            stackSegment.push(operand);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -279,6 +285,13 @@ public class Process {
     public void setAC(int value) {
         pcb.setAC(value);
     }
+    public void storeToMemory(int address, int value) {
+        memory.put(address, value);
+    }
+
+    public int popFromStackSegment() {
+        return stackSegment.pop();
+    }
 
     private static class Instruction {
         private final OpCode opCode;
@@ -377,7 +390,8 @@ public class Process {
         BP,
         BZP,
         BZN,
-        INT
+        INT,
+        PUSH
     }
 
     public enum IOCode {
@@ -389,7 +403,7 @@ public class Process {
             this.code = code;
         }
 
-        static IOCode of(int code) {
+        public static IOCode of(int code) {
             for (IOCode value : values()) {
                 if(value.code == code) return value;
             }

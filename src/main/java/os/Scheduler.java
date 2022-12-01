@@ -1,12 +1,13 @@
 package main.java.os;
 
+import main.java.io.Keyboard;
+import main.java.io.Monitor;
 import main.java.os.interrupt.*;
 import main.java.power.Power;
 import main.java.utils.Logger;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 
 public class Scheduler extends Thread{
@@ -127,29 +128,40 @@ public class Scheduler extends Thread{
             EInterrupt.EProcessInterrupt eInterrupt = interrupt.getEInterrupt();
             switch (eInterrupt) {
                 case TIME_OUT:
-                    handleTimeOut(interrupt);
+                    handleTimeOut(interrupt.getProcess());
                     break;
                 case PROCESS_START:
-                    handleProcessStart(interrupt);
+                    handleProcessStart(interrupt.getProcess());
                     break;
                 case PROCESS_END:
-                    handleProcessEnd(interrupt);
+                    handleProcessEnd(interrupt.getProcess());
                     break;
                 case READ_START:
+                    handleReadStart(interrupt.getProcess());
                 case WRITE_START:
-                    handleIOStart();
+                    handleWriteStart(interrupt.getProcess());
+//                    handleIOStart();
                     break;
                 case READ_COMPLETE:
                 case WRITE_COMPLETE:
-                    handleIOComplete(interrupt);
+                    handleIOComplete(interrupt.getProcess());
                     break;
                 default:
                     break;
             }
         }
 
-        private void handleIOComplete(ProcessInterrupt interrupt) {
-            Process process = interrupt.getProcess();
+        private void handleWriteStart(Process process) {
+            handleIOStart();
+            Monitor.getInstance().add(process);
+        }
+
+        private void handleReadStart(Process process) {
+            handleIOStart();
+            Keyboard.getInstance().add(process);
+        }
+
+        private void handleIOComplete(Process process) {
             scheduler.removeFromWaitQueue(process);
             scheduler.enReadyQueue(process);
         }
@@ -161,31 +173,29 @@ public class Scheduler extends Thread{
             scheduler.setRunningProcess(scheduler.deReadyQueue());
         }
 
-        private void handleProcessStart(ProcessInterrupt interrupt) {
-            scheduler.enReadyQueue(interrupt.getProcess());
+        private void handleProcessStart(Process process) {
+            scheduler.enReadyQueue(process);
         }
 
-        private void handleProcessEnd(ProcessInterrupt interrupt) {
-            Process interruptedProcess = interrupt.getProcess();
+        private void handleProcessEnd(Process process) {
             Process currProcess = scheduler.getRunningProcess();
-            if (interruptedProcess == currProcess) {
+            if (process == currProcess) {
                 if(scheduler.isReadyQueueEmpty()) scheduler.setRunningProcess(null);
                 Process nextProcess = scheduler.deReadyQueue();
                 scheduler.setRunningProcess(nextProcess);
             } else {
-                scheduler.removeFromReadyQueue(interruptedProcess);
+                scheduler.removeFromReadyQueue(process);
             }
             // Interrupt queue에서 전부 제거
             interruptQueue.removeAllOf(currProcess);
             // Wait queue에서 전부 제거
         }
 
-        private void handleTimeOut(ProcessInterrupt interrupt) {
-            Process currProcess = scheduler.getRunningProcess();
-            if(currProcess == null) return;
-            if(!currProcess.equals(interrupt.getProcess())) return;
-            currProcess.ready();
-            scheduler.enReadyQueue(currProcess);
+        private void handleTimeOut(Process process) {
+            if(process == null) return;
+            if(!process.equals(process)) return;
+            process.ready();
+            scheduler.enReadyQueue(process);
             Process nextProcess = scheduler.deReadyQueue();
             scheduler.setRunningProcess(nextProcess);
         }

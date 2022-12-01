@@ -1,5 +1,7 @@
 package main.java.io;
 
+import main.java.exception.InvalidInterruptCode;
+import main.java.exception.InvalidInterruptForMonitorException;
 import main.java.os.Process;
 import main.java.power.Power;
 import main.java.utils.SPrinter;
@@ -16,10 +18,7 @@ public class Monitor extends MyIO{
     public void run() {
         while (Power.isOn()) {
             try {
-                Task task = tasks.take();
-                Process owner = task.getOwner();
-                SPrinter.getInstance().println("Process_" + owner.getSerialNumber() + " >> Screen >> " + task.getValue() + System.lineSeparator());
-                interruptQueue.addWriteComplete(owner);
+                handle();
                 Thread.sleep(IO_DELAY);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -27,11 +26,53 @@ public class Monitor extends MyIO{
         }
     }
 
-    public void add(Process process, Object value) {
+    private void handle() {
         try {
-            tasks.put(new Task(process, value));
+            Process process = processBlockingQueue.take();
+            switch(MonitorCode.of(process.popFromStackSegment())) {
+                case WRITE:
+                    handleWrite(process);
+                    break;
+                default:
+                    throw new InvalidInterruptForMonitorException();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void handleWrite(Process process) {
+        SPrinter.getInstance().println("Process_" + process.getSerialNumber() + " >> Screen >> " + process.popFromStackSegment() + System.lineSeparator());
+        interruptQueue.addWriteComplete(process);
+    }
+
+    public void add(Process process) {
+        try {
+            processBlockingQueue.put(process);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private enum MonitorCode {
+        WRITE(Process.IOCode.WRITE),
+        ;
+        
+        private Process.IOCode ioCode;
+
+        MonitorCode(Process.IOCode ioCode) {
+            this.ioCode = ioCode;
+        }
+
+        public static MonitorCode of(int code) {
+            return of(Process.IOCode.of(code));
+        }
+
+        private static MonitorCode of(Process.IOCode ioCode) {
+            for (MonitorCode monitorCode : values()) {
+                if(monitorCode.ioCode == ioCode) return monitorCode;
+            }
+            throw new InvalidInterruptCode();
         }
     }
 }
