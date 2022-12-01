@@ -11,6 +11,7 @@ public class Logger {
     private static Timer autoFlushTimer;
 
     public static void add(String msg) {
+//        System.out.println(msg);
         try {
             bw.write("LOGGER >> " + msg + System.lineSeparator());
         } catch (IOException e) {

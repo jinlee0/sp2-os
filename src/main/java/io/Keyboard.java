@@ -29,7 +29,9 @@ public class Keyboard extends MyIO{
     private void handle() {
         try {
             Process process = processBlockingQueue.take();
-            switch(KeyboardCode.of(process.popFromStackSegment())) {
+            int code = process.popFromStackSegment();
+            System.out.println("code: " + code);
+            switch(KeyboardCode.of(code)) {
                 case READ:
                     handleRead(process);
                     break;
@@ -44,7 +46,9 @@ public class Keyboard extends MyIO{
     private void handleRead(Process process) {
         SScanner scanner = SScanner.getInstance();
         int buffer = Integer.parseInt(scanner.nextLine("Process_" + process.getSerialNumber() + " >> " + "Keyboard >> "));
-        process.storeToMemory(process.popFromStackSegment(), buffer);
+        int address = process.popFromStackSegment();
+        System.out.println("address: " + address);
+        process.storeMemory(address, buffer);
         interruptQueue.addReadComplete(process);
 
     }

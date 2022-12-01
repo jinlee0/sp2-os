@@ -14,7 +14,7 @@ PUSH 2  // memory address to store
 INT 1   // int count = readInt();
 LDA 0   // while(i<count) whileStart:
 SUBA 2
-BZP 36  // to whileEnd
+BZP 18  // to whileEnd
 PUSH 3
 INT 1   // value = readInt();
 LDA 1   // sum = sum + value;
@@ -23,7 +23,7 @@ STA 1
 LDA 0   // i = i + 1;
 ADDC 1
 STA 0
-BR 24   // to whileStart
+BR 6   // to whileStart
 PUSH 1  // whileEnd:
 INT 0
 HALT 0

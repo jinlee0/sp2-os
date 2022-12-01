@@ -223,7 +223,7 @@ public class Process {
     private void exeLDC(int operand) {
         pcb.context.set(ERegister.AC, operand);
     }
-    private Integer loadMemory(int operand) {
+    public Integer loadMemory(int operand) {
         Integer value = memory.get(operand);
         if(value == null) throw new CannotLoadUninitializedMemory();
         return value;
@@ -285,7 +285,7 @@ public class Process {
     public void setAC(int value) {
         pcb.setAC(value);
     }
-    public void storeToMemory(int address, int value) {
+    public void storeMemory(int address, int value) {
         memory.put(address, value);
     }
 

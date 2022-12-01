@@ -1,5 +1,6 @@
 package main.java.os;
 
+import main.java.exception.EmptyReadyQueueException;
 import main.java.io.Keyboard;
 import main.java.io.Monitor;
 import main.java.os.interrupt.*;
@@ -44,21 +45,11 @@ public class Scheduler extends Thread{
         Logger.add("Scheduler run() end");
     }
 
-    // critical section
     public void enReadyQueue(Process process) {
-//        try {
             readyQueue.offer(process);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
     }
     public Process deReadyQueue() {
-//        try {
-            return readyQueue.poll();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
+        return readyQueue.poll();
     }
     public boolean isReadyQueueEmpty() {
         return readyQueue.isEmpty();
@@ -138,6 +129,7 @@ public class Scheduler extends Thread{
                     break;
                 case READ_START:
                     handleReadStart(interrupt.getProcess());
+                    break;
                 case WRITE_START:
                     handleWriteStart(interrupt.getProcess());
 //                    handleIOStart();
@@ -192,13 +184,11 @@ public class Scheduler extends Thread{
         }
 
         private void handleTimeOut(Process process) {
-            if(process == null) return;
-            if(!process.equals(process)) return;
+            if (process == null || !process.equals(process) || runningProcess == null) return;
             process.ready();
             scheduler.enReadyQueue(process);
             Process nextProcess = scheduler.deReadyQueue();
             scheduler.setRunningProcess(nextProcess);
         }
-
     }
 }
