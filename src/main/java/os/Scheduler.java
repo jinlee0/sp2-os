@@ -1,6 +1,5 @@
 package main.java.os;
 
-import main.java.exception.EmptyReadyQueueException;
 import main.java.io.Keyboard;
 import main.java.io.Monitor;
 import main.java.os.interrupt.*;
@@ -11,7 +10,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 
-public class Scheduler extends Thread{
+public class Scheduler{
     // components
     private final Queue<Process> readyQueue = new ArrayDeque<>(READY_QUEUE_MAX_SIZE);
     private final Queue<Process> waitQueue = new ArrayDeque<>(READY_QUEUE_MAX_SIZE);
@@ -19,42 +18,50 @@ public class Scheduler extends Thread{
 
     // associations
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
-    private final BlockingQueue<Interrupt> fileIOCommandQueue;
 
     // working variables
     private Process runningProcess;
 
     private static final int READY_QUEUE_MAX_SIZE = 10;
 
-    public Scheduler(BlockingQueue<Interrupt> fileIOCommandQueue) {
-        this.fileIOCommandQueue = fileIOCommandQueue;
+
+//    public void run() {
+//        Logger.add("Scheduler run() start");
+//        while (Power.isOn()) {
+//            if (interruptQueue.hasInterrupt()) interruptHandler.handle();
+//            else {
+//                if (runningProcess == null) {
+//                    runningProcess = deReadyQueue();
+//                    if (runningProcess == null) continue;
+//                }
+//                runningProcess.run();
+//            }
+//        }
+//        Logger.add("Scheduler run() end");
+//    }
+    public void handleAllInterrupts() {
+        while(interruptQueue.hasInterrupt())
+            interruptHandler.handle();
     }
 
-    public void run() {
-        Logger.add("Scheduler run() start");
-        while (Power.isOn()) {
-            if (interruptQueue.hasInterrupt()) interruptHandler.handle();
-            else {
-                if (runningProcess == null) {
-                    runningProcess = deReadyQueue();
-                    if (runningProcess == null) continue;
-                }
-                runningProcess.run();
-            }
+    public void executeInstruction() {
+        if (runningProcess == null) {
+            runningProcess = deReadyQueue();
+            if (runningProcess == null) return;
         }
-        Logger.add("Scheduler run() end");
+        runningProcess.run();
     }
 
-    public void enReadyQueue(Process process) {
+    private void enReadyQueue(Process process) {
             readyQueue.offer(process);
     }
-    public Process deReadyQueue() {
+    private Process deReadyQueue() {
         return readyQueue.poll();
     }
-    public boolean isReadyQueueEmpty() {
+    private boolean isReadyQueueEmpty() {
         return readyQueue.isEmpty();
     }
-    public void removeFromReadyQueue(Process interruptedProcess) {
+    private void removeFromReadyQueue(Process interruptedProcess) {
         readyQueue.remove(interruptedProcess);
     }
     public Process findBySerialNumber(long serialNumber) {
@@ -68,11 +75,7 @@ public class Scheduler extends Thread{
 
     // critical section
     public void enWaitQueue(Process process) {
-//        try {
             waitQueue.offer(process);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
     }
     public void removeFromWaitQueue(Process process) {
         waitQueue.remove(process);
@@ -86,6 +89,8 @@ public class Scheduler extends Thread{
     public void setRunningProcess(Process runningProcess) {
         this.runningProcess = runningProcess;
     }
+
+
 
     private class InterruptHandler {
         private final Scheduler scheduler;

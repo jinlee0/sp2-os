@@ -60,7 +60,7 @@ public class Process {
     private void executeOneLine() {
         int PC = pcb.getPC();
         Instruction instruction = codeSegment.get(PC);
-        pcb.getContext().set(ERegister.PC, PC + 1);
+        pcb.getContext().setPC(PC + 1);
         Logger.add("\tPC: "+ PC + ", " + instruction);
 
         OpCode opCode = instruction.getOpCode();
@@ -221,7 +221,7 @@ public class Process {
         pcb.setAC(loadMemory(operand));
     }
     private void exeLDC(int operand) {
-        pcb.context.set(ERegister.AC, operand);
+        pcb.setAC(operand);
     }
     public Integer loadMemory(int operand) {
         Integer value = memory.get(operand);
@@ -282,9 +282,6 @@ public class Process {
         return serialNumber;
     }
 
-    public void setAC(int value) {
-        pcb.setAC(value);
-    }
     public void storeMemory(int address, int value) {
         memory.put(address, value);
     }
@@ -293,7 +290,15 @@ public class Process {
         return stackSegment.pop();
     }
 
-    private static class Instruction {
+    public int getPC() {
+        return this.pcb.getPC();
+    }
+
+    public void setPC(int value) {
+        this.pcb.setPC(value);
+    }
+
+    public static class Instruction {
         private final OpCode opCode;
         private final int operand;
 
@@ -327,12 +332,12 @@ public class Process {
             return context;
         }
         public int getPC() {
-            return context.get(ERegister.PC);
+            return context.getPC();
         }
-        public int getAC() { return context.get(ERegister.AC); }
-        public void setAC(int value) { context.set(ERegister.AC, value); }
+        public int getAC() { return context.getAC(); }
+        public void setAC(int value) { context.setAC(value); }
         public void setPC(int address) {
-            context.set(ERegister.PC, address);
+            context.setPC(address);
         }
         public ProcessStatus getStatus() {
             return eStatus;
@@ -346,27 +351,42 @@ public class Process {
         RUNNING, READY, WAITING, SUSPENDED, NONE
     }
 
-    private static class Context {
-        private final Map<ERegister, Integer> contextMap = new HashMap<>();
+    public static class Context {
+        private final Map<ERegister, Object> contextMap = new HashMap<>();
 
         public Context() {
             for (ERegister eRegister : ERegister.values()) {
                 contextMap.put(eRegister, 0);
             }
         }
-        public int get(ERegister eRegister) {
+        private Object get(ERegister eRegister) {
             return this.contextMap.get(eRegister);
         }
-        public void set(ERegister key, int value) {
+        private void set(ERegister key, Object value) {
             this.contextMap.put(key, value);
         }
+
+        public int getPC() {
+            return (int) this.get(ERegister.PC);
+        }
+        public int getAC() {
+            return (int) this.get(ERegister.PC);
+        }
+        public void setPC(int value) {
+            this.set(ERegister.PC, value);
+        }
+        public void setAC(int value) {
+            this.set(ERegister.AC, value);
+        }
     }
-    private enum ERegister {
+    public enum ERegister {
         PC,
-        //    IR, MBR, MAR,
+        IR,
+        // MBR, MAR,
         AC,
         //    PROCESS_ID,
         CS, DS, SS, HS,
+        ;
     }
 
     private enum OpCode {
