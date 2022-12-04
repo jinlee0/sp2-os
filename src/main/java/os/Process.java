@@ -11,13 +11,15 @@ import java.util.*;
 
 public class Process {
     private final PCB pcb = new PCB();
-    private final int serialNumber;
     private final List<Instruction> codeSegment = new ArrayList<>();
     private final Stack<Integer> stackSegment = new Stack<>();
     private final Map<Integer, Integer> heapSegment = new HashMap<>();
     private final Map<Integer, Integer> dataSegment = new HashMap<>();
-    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private Timer timer;
+
+    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
+
+    private final int serialNumber;
 
     private static int SERIAL_NUMBER = 0;
     private final static long SLEEP_MILLIS = 50L;
@@ -55,6 +57,7 @@ public class Process {
 
     public void waiting() {
         pcb.setStatus(ProcessStatus.WAITING);
+        timer.cancel();
     }
 
     private void executeOneLine() {
@@ -218,7 +221,7 @@ public class Process {
         }
     }
     public enum ERegister {
-        PC, AC, SR,
+        PC, AC,
 //        IR, MBR, MAR,
         CS, DS, SS, HS,
     }
@@ -242,13 +245,26 @@ public class Process {
         DIVC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() / operand))),
         SHRC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() >> operand))),
         BR(((process, operand) -> process.pcb.setPC(operand))),
-        BZ(((process, operand) -> { if(process.pcb.getAC() == 0) process.pcb.setPC(operand);})),
-        BN(((process, operand) -> { if(process.pcb.getAC() < 0) process.pcb.setPC(operand);})),
-        BP((process, operand) -> { if(process.pcb.getAC() > 0) process.pcb.setPC(operand);}),
-        BZP(((process, operand) -> { if(process.pcb.getAC() >= 0) process.pcb.setPC(operand);})),
-        BZN(((process, operand) -> { if(process.pcb.getAC() <= 0) process.pcb.setPC(operand);})),
+        BZ(((process, operand) -> {
+            if (process.pcb.getAC() == 0) process.pcb.setPC(operand);
+        })),
+        BN(((process, operand) -> {
+            if (process.pcb.getAC() < 0) process.pcb.setPC(operand);
+        })),
+        BP((process, operand) -> {
+            if (process.pcb.getAC() > 0) process.pcb.setPC(operand);
+        }),
+        BZP(((process, operand) -> {
+            if (process.pcb.getAC() >= 0) process.pcb.setPC(operand);
+        })),
+        BZN(((process, operand) -> {
+            if (process.pcb.getAC() <= 0) process.pcb.setPC(operand);
+        })),
         INT((OpCode::execute)),
-        PUSH(((process, operand) -> { process.stackSegment.push(operand); })),
+        PUSH(((process, operand) -> {
+            process.stackSegment.push(operand);
+        })),
+
         ;
 
         private final Executable executable;
@@ -271,8 +287,8 @@ public class Process {
     }
 
     public enum IOCode {
-        WRITE(0, process -> process.interruptQueue.addWriteStart(process)),
-        READ(1, process -> process.interruptQueue.addReadStart(process));
+        WRITE_INT(0, process -> process.interruptQueue.addWriteStart(process)),
+        READ_INT(1, process -> process.interruptQueue.addReadStart(process));
 
         private final int code;
         private final Executable executable;

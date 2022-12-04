@@ -25,7 +25,6 @@ public class Keyboard extends MyIO{
         try {
             Process process = processBlockingQueue.take();
             int code = process.popFromStackSegment();
-            System.out.println("code: " + code);
             switch(KeyboardCode.of(code)) {
                 case READ:
                     handleRead(process);
@@ -45,7 +44,6 @@ public class Keyboard extends MyIO{
         System.out.println("address: " + address);
         process.storeMemory(address, buffer);
         interruptQueue.addReadComplete(process);
-
     }
 
     public void add(Process process) {
@@ -57,7 +55,7 @@ public class Keyboard extends MyIO{
     }
 
     private enum KeyboardCode {
-        READ(Process.IOCode.READ),
+        READ(Process.IOCode.READ_INT),
         ;
 
         private Process.IOCode ioCode;

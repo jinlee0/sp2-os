@@ -50,7 +50,7 @@ public class Monitor extends MyIO{
     }
     
     private enum MonitorCode {
-        WRITE(Process.IOCode.WRITE),
+        WRITE(Process.IOCode.WRITE_INT),
         ;
         
         private Process.IOCode ioCode;

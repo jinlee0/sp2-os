@@ -13,6 +13,7 @@ public class MainFrame extends JFrame {
         this.setMinimumSize(new Dimension(1080, 300));
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.mainPanel = new MainPanel();
+
         this.add(mainPanel);
 
         this.pack();
