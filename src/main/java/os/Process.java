@@ -14,8 +14,8 @@ public class Process {
     private final int serialNumber;
     private final List<Instruction> codeSegment = new ArrayList<>();
     private final Stack<Integer> stackSegment = new Stack<>();
-    private final Map<Integer, Integer> headSegment = new HashMap<>();
-    private final Map<Integer, Integer> memory = new HashMap<>();
+    private final Map<Integer, Integer> heapSegment = new HashMap<>();
+    private final Map<Integer, Integer> dataSegment = new HashMap<>();
     private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
     private Timer timer;
 
@@ -59,172 +59,18 @@ public class Process {
 
     private void executeOneLine() {
         int PC = pcb.getPC();
+        if(PC >= codeSegment.size()) return;
         Instruction instruction = codeSegment.get(PC);
         pcb.getContext().setPC(PC + 1);
         Logger.add("\tPC: "+ PC + ", " + instruction);
 
         OpCode opCode = instruction.getOpCode();
         int operand = instruction.getOperand();
-        switch (opCode) {
-            case LDC:
-                exeLDC(operand);
-                break;
-            case LDA:
-                exeLDA(operand);
-                break;
-            case STA:
-                exeSTA(operand);
-                break;
-            case ADDA:
-                exeADDA(operand);
-                break;
-            case SUBA:
-                exeSUBA(operand);
-                break;
-            case MULA:
-                exeMULA(operand);
-                break;
-            case DIVA:
-                exeDIVA(operand);
-                break;
-            case SHRA: // bit shift right
-                exeSHRA(operand);
-                break;
-            case ADDC:
-                exeADDC(operand);
-                break;
-            case SUBC:
-                exeSUBC(operand);
-                break;
-            case MULC:
-                exeMULC(operand);
-                break;
-            case DIVC:
-                exeDIVC(operand);
-                break;
-            case SHRC:
-                exeSHRC(operand);
-                break;
-            case BR:
-                exeBR(operand);
-                break;
-            case BZ:
-                exeBZ(operand);
-                break;
-            case BN:
-                exeBN(operand);
-                break;
-            case BP:
-                exeBP(operand);
-                break;
-            case BZN:
-                exeBZN(operand);
-                break;
-            case BZP:
-                exeBZP(operand);
-                break;
-            case INT:
-                exeINT(operand);
-                break;
-            case PUSH:
-                exePUSH(operand);
-                break;
-            case HALT:
-                exeHALT();
-                break;
-        }
+        opCode.execute(this, operand);
     }
 
-    private void exePUSH(int operand) {
-        stackSegment.push(operand);
-    }
-
-    private void exeINT(int operand) {
-        // process 를 웨이팅 큐로
-        // IO 마치면 인터럽트 생김
-        try {
-            timer.cancel();
-            IOCode eIOCode = IOCode.of(operand);
-            switch (eIOCode) {
-                case WRITE:
-                    interruptQueue.addWriteStart(this);
-//                    Monitor.getInstance().add(this);
-                    break;
-                case READ:
-                    interruptQueue.addReadStart(this);
-//                    Keyboard.getInstance().add(this);
-                    break;
-            }
-            stackSegment.push(operand);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-    private void exeHALT() {
-        interruptQueue.addProcessEnd(this);
-        Logger.add(this.toString());
-    }
-
-    private void exeBZP(int operand) {
-        if(pcb.getAC() >= 0) pcb.setPC(operand);
-    }
-    private void exeBZN(int operand) {
-        if(pcb.getAC() <= 0) pcb.setPC(operand);
-    }
-    private void exeBP(int operand) {
-        if(pcb.getAC() > 0) pcb.setPC(operand);
-    }
-    private void exeBN(int operand) {
-        if(pcb.getAC() < 0) pcb.setPC(operand);
-    }
-    private void exeBZ(int operand) {
-        if(pcb.getAC() == 0) pcb.setPC(operand);
-    }
-    private void exeBR(int operand) {
-        pcb.setPC(operand);
-    }
-    private void exeSHRC(int operand) {
-        pcb.setAC(pcb.getAC() >> operand);
-    }
-    private void exeDIVC(int operand) {
-        pcb.setAC(pcb.getAC() / operand);
-    }
-    private void exeMULC(int operand) {
-        pcb.setAC(pcb.getAC() * operand);
-    }
-    private void exeSUBC(int operand) {
-        pcb.setAC(pcb.getAC() - operand);
-    }
-    private void exeADDC(int operand) {
-        pcb.setAC(pcb.getAC() + operand);
-    }
-    private void exeSHRA(int operand) {
-        pcb.setAC(pcb.getAC() >> loadMemory(operand));
-    }
-    private void exeDIVA(int operand) {
-        pcb.setAC(pcb.getAC() / loadMemory(operand));
-    }
-    private void exeMULA(int operand) {
-        pcb.setAC(pcb.getAC() * loadMemory(operand));
-    }
-    private void exeSUBA(int operand) {
-        pcb.setAC(pcb.getAC() - loadMemory(operand));
-    }
-    private void exeADDA(int operand) {
-        pcb.setAC(pcb.getAC() + loadMemory(operand));
-    }
-    private void exeSTA(int operand) {
-        memory.put(operand, pcb.getAC());
-    }
-    private void exeLDA(int operand) {
-        pcb.setAC(loadMemory(operand));
-    }
-    private void exeLDC(int operand) {
-        pcb.setAC(operand);
-    }
     public Integer loadMemory(int operand) {
-        Integer value = memory.get(operand);
+        Integer value = dataSegment.get(operand);
         if(value == null) throw new CannotLoadUninitializedMemory();
         return value;
     }
@@ -272,8 +118,8 @@ public class Process {
             sb.append("\t\t").append(eRegister).append(": ").append(pcb.context.get(eRegister)).append(System.lineSeparator());
         }
         sb.append("\t").append("Memory").append(System.lineSeparator());
-        for (Integer integer : memory.keySet()) {
-            sb.append("\t\t").append(integer).append(": ").append(memory.get(integer)).append(System.lineSeparator());
+        for (Integer integer : dataSegment.keySet()) {
+            sb.append("\t\t").append(integer).append(": ").append(dataSegment.get(integer)).append(System.lineSeparator());
         }
         return sb.toString();
     }
@@ -283,19 +129,11 @@ public class Process {
     }
 
     public void storeMemory(int address, int value) {
-        memory.put(address, value);
+        dataSegment.put(address, value);
     }
 
     public int popFromStackSegment() {
         return stackSegment.pop();
-    }
-
-    public int getPC() {
-        return this.pcb.getPC();
-    }
-
-    public void setPC(int value) {
-        this.pcb.setPC(value);
     }
 
     public static class Instruction {
@@ -370,7 +208,7 @@ public class Process {
             return (int) this.get(ERegister.PC);
         }
         public int getAC() {
-            return (int) this.get(ERegister.PC);
+            return (int) this.get(ERegister.AC);
         }
         public void setPC(int value) {
             this.set(ERegister.PC, value);
@@ -380,47 +218,67 @@ public class Process {
         }
     }
     public enum ERegister {
-        PC,
-        IR,
-        // MBR, MAR,
-        AC,
-        //    PROCESS_ID,
+        PC, AC, SR,
+//        IR, MBR, MAR,
         CS, DS, SS, HS,
-        ;
     }
 
     private enum OpCode {
-        HALT,
-        LDC,
-        LDA,
-        STA,
-        ADDA,
-        SUBA,
-        MULA,
-        DIVA,
-        SHRA,
-        ADDC,
-        SUBC,
-        MULC,
-        DIVC,
-        SHRC,
-        BR,
-        BZ,
-        BN,
-        BP,
-        BZP,
-        BZN,
-        INT,
-        PUSH
+        HALT((process, operand) -> {
+            process.interruptQueue.addProcessEnd(process);
+            Logger.add(process.toString());
+        }),
+        LDC((process, operand) -> process.pcb.setAC(operand)),
+        LDA(((process, operand) -> process.pcb.setAC(process.loadMemory(operand)))),
+        STA(((process, operand) -> process.dataSegment.put(operand, process.pcb.getAC()))),
+        ADDA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() + process.loadMemory(operand)))),
+        SUBA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() - process.loadMemory(operand)))),
+        MULA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() * process.loadMemory(operand)))),
+        DIVA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() / process.loadMemory(operand)))),
+        SHRA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() >> process.loadMemory(operand)))),
+        ADDC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() + operand))),
+        SUBC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() - operand))),
+        MULC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() * operand))),
+        DIVC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() / operand))),
+        SHRC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() >> operand))),
+        BR(((process, operand) -> process.pcb.setPC(operand))),
+        BZ(((process, operand) -> { if(process.pcb.getAC() == 0) process.pcb.setPC(operand);})),
+        BN(((process, operand) -> { if(process.pcb.getAC() < 0) process.pcb.setPC(operand);})),
+        BP((process, operand) -> { if(process.pcb.getAC() > 0) process.pcb.setPC(operand);}),
+        BZP(((process, operand) -> { if(process.pcb.getAC() >= 0) process.pcb.setPC(operand);})),
+        BZN(((process, operand) -> { if(process.pcb.getAC() <= 0) process.pcb.setPC(operand);})),
+        INT((OpCode::execute)),
+        PUSH(((process, operand) -> { process.stackSegment.push(operand); })),
+        ;
+
+        private final Executable executable;
+
+        OpCode(Executable executable) {
+            this.executable = executable;
+        }
+
+        private static void execute(Process process, Integer operand) {
+            IOCode.of(operand).execute(process, operand);
+        }
+
+        public void execute(Process process, int operand) {
+            executable.execute(process, operand);
+        }
+
+        private interface Executable {
+            void execute(Process process, Integer operand);
+        }
     }
 
     public enum IOCode {
-        WRITE(0), READ(1);
+        WRITE(0, process -> process.interruptQueue.addWriteStart(process)),
+        READ(1, process -> process.interruptQueue.addReadStart(process));
 
         private final int code;
-
-        IOCode(int code) {
+        private final Executable executable;
+        IOCode(int code, Executable executable) {
             this.code = code;
+            this.executable = executable;
         }
 
         public static IOCode of(int code) {
@@ -428,6 +286,16 @@ public class Process {
                 if(value.code == code) return value;
             }
             throw new InvalidInterruptCode();
+        }
+
+        public void execute(Process process, int operand) {
+            process.timer.cancel();
+            executable.execute(process);
+            process.stackSegment.push(operand);
+        }
+
+        private interface Executable {
+            void execute(Process process);
         }
     }
 }

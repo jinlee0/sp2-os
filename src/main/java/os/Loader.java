@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Loader {
 
     public Process load(String exeName) throws FileNotFoundException {
-        Scanner scanner = new Scanner(new File("data/" + exeName));
+        Scanner scanner = new Scanner(new File("programs/" + exeName));
         Process process = new Process();
         process.load(scanner);
         return process;

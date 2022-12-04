@@ -17,12 +17,7 @@ public class Keyboard extends MyIO{
     @Override
     public void run() {
         while (Power.isOn()) {
-            try {
-                handle();
-                Thread.sleep(IO_DELAY);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            handle();
         }
     }
 
