@@ -20,4 +20,10 @@ public class CPU extends Thread {
         }
         Logger.add("CPU run() end");
     }
+
+    public void initialize() {
+    }
+
+    public void finish() {
+    }
 }

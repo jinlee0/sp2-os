@@ -15,12 +15,20 @@ public class Scheduler{
     private final InterruptHandler interruptHandler = new InterruptHandler(this);
 
     // associations
-    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
+    private final InterruptQueue interruptQueue;
+    private final Monitor monitor;
+    private final Keyboard keyboard;
 
     // working variables
     private Process runningProcess;
 
     private static final int READY_QUEUE_MAX_SIZE = 10;
+
+    public Scheduler(InterruptQueue interruptQueue, Monitor monitor, Keyboard keyboard) {
+        this.interruptQueue = interruptQueue;
+        this.monitor = monitor;
+        this.keyboard = keyboard;
+    }
 
     public void handleAllInterrupts() {
         while(interruptQueue.hasInterrupt())
@@ -70,6 +78,12 @@ public class Scheduler{
     }
     private void setRunningProcess(Process runningProcess) {
         this.runningProcess = runningProcess;
+    }
+
+    public void initialize() {
+    }
+
+    public void finish() {
     }
 
     private class InterruptHandler {
@@ -129,12 +143,12 @@ public class Scheduler{
 
         private void handleWriteStart(Process process) {
             handleIOStart();
-            Monitor.getInstance().add(process);
+            monitor.add(process);
         }
 
         private void handleReadStart(Process process) {
             handleIOStart();
-            Keyboard.getInstance().add(process);
+            keyboard.add(process);
         }
 
         private void handleIOComplete(Process process) {

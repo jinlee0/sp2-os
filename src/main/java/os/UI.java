@@ -13,13 +13,14 @@ import java.util.StringTokenizer;
 public class UI extends Thread {
     private final Scheduler scheduler;
     private final Loader loader;
-    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
+    private final InterruptQueue interruptQueue;
     private final SPrinter printer = SPrinter.getInstance();
     private final SScanner scanner = SScanner.getInstance();
 
-    public UI(Scheduler scheduler) {
-        this.loader = new Loader();
+    public UI(Scheduler scheduler, InterruptQueue interruptQueue) {
+        this.loader = new Loader(interruptQueue);
         this.scheduler = scheduler;
+        this.interruptQueue = interruptQueue;
     }
 
     @Override
@@ -102,5 +103,11 @@ public class UI extends Thread {
     }
     private void println(String s) {
         printer.println(s);
+    }
+
+    public void initialize() {
+    }
+
+    public void finish() {
     }
 }

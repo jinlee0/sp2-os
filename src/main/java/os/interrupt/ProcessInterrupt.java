@@ -20,4 +20,6 @@ public class ProcessInterrupt implements Interrupt {
     public EProcessInterrupt getEInterrupt() {
         return eProcessInterrupt;
     }
+
 }
+

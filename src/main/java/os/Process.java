@@ -17,7 +17,7 @@ public class Process {
     private final Map<Integer, Integer> dataSegment = new HashMap<>();
     private Timer timer;
 
-    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
+    private final InterruptQueue interruptQueue;
 
     private final int serialNumber;
 
@@ -25,7 +25,8 @@ public class Process {
     private final static long SLEEP_MILLIS = 50L;
     private final static long TIME_OUT_MILLIS = 300L;
 
-    public Process() {
+    public Process(InterruptQueue interruptQueue) {
+        this.interruptQueue = interruptQueue;
         serialNumber = SERIAL_NUMBER++;
     }
 

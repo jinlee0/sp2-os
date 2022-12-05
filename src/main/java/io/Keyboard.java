@@ -46,12 +46,10 @@ public class Keyboard extends MyIO{
         interruptQueue.addReadComplete(process);
     }
 
-    public void add(Process process) {
-        try {
-            processBlockingQueue.put(process);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void initialize() {
+    }
+
+    public void finish() {
     }
 
     private enum KeyboardCode {

@@ -41,14 +41,12 @@ public class Monitor extends MyIO{
         interruptQueue.addWriteComplete(process);
     }
 
-    public void add(Process process) {
-        try {
-            processBlockingQueue.put(process);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void initialize() {
     }
-    
+
+    public void finish() {
+    }
+
     private enum MonitorCode {
         WRITE(Process.IOCode.WRITE_INT),
         ;

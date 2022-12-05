@@ -11,7 +11,14 @@ public abstract class MyIO extends Thread{
     protected final InterruptQueue interruptQueue = InterruptQueue.getInstance();
 
     protected final static int TASK_SIZE = 10;
-    protected final static long IO_DELAY = 300L;
 
     public abstract void run();
+
+    public void add(Process process) {
+        try {
+            processBlockingQueue.put(process);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
