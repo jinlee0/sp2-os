@@ -58,7 +58,7 @@ public class Keyboard extends MyIO{
         READ(Process.IOCode.READ_INT),
         ;
 
-        private Process.IOCode ioCode;
+        private final Process.IOCode ioCode;
 
         KeyboardCode(Process.IOCode ioCode) {
             this.ioCode = ioCode;

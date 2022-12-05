@@ -53,7 +53,7 @@ public class Monitor extends MyIO{
         WRITE(Process.IOCode.WRITE_INT),
         ;
         
-        private Process.IOCode ioCode;
+        private final Process.IOCode ioCode;
 
         MonitorCode(Process.IOCode ioCode) {
             this.ioCode = ioCode;

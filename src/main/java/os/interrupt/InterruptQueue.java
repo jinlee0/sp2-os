@@ -43,12 +43,7 @@ public class InterruptQueue {
         addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.WRITE_COMPLETE, process));
     }
     public Interrupt pollInterrupt() {
-        return runWithInterruptQueueSemaphore(() -> {
-            return interruptQueue.poll();
-        });
-    }
-    public Interrupt pollLast() {
-        return runWithInterruptQueueSemaphore(interruptQueue::pollLast);
+        return runWithInterruptQueueSemaphore(interruptQueue::poll);
     }
 
     public boolean hasInterrupt() {
