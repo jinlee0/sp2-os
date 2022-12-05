@@ -232,38 +232,38 @@ public class Process {
             Logger.add(process.toString());
         }),
         LDC((process, operand) -> process.pcb.setAC(operand)),
-        LDA(((process, operand) -> process.pcb.setAC(process.loadMemory(operand)))),
-        STA(((process, operand) -> process.dataSegment.put(operand, process.pcb.getAC()))),
-        ADDA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() + process.loadMemory(operand)))),
-        SUBA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() - process.loadMemory(operand)))),
-        MULA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() * process.loadMemory(operand)))),
-        DIVA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() / process.loadMemory(operand)))),
-        SHRA(((process, operand) -> process.pcb.setAC(process.pcb.getAC() >> process.loadMemory(operand)))),
-        ADDC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() + operand))),
-        SUBC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() - operand))),
-        MULC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() * operand))),
-        DIVC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() / operand))),
-        SHRC(((process, operand) -> process.pcb.setAC(process.pcb.getAC() >> operand))),
-        BR(((process, operand) -> process.pcb.setPC(operand))),
-        BZ(((process, operand) -> {
+        LDA((process, operand) -> process.pcb.setAC(process.loadMemory(operand))),
+        STA((process, operand) -> process.dataSegment.put(operand, process.pcb.getAC())),
+        ADDA((process, operand) -> process.pcb.setAC(process.pcb.getAC() + process.loadMemory(operand))),
+        SUBA((process, operand) -> process.pcb.setAC(process.pcb.getAC() - process.loadMemory(operand))),
+        MULA((process, operand) -> process.pcb.setAC(process.pcb.getAC() * process.loadMemory(operand))),
+        DIVA((process, operand) -> process.pcb.setAC(process.pcb.getAC() / process.loadMemory(operand))),
+        SHRA((process, operand) -> process.pcb.setAC(process.pcb.getAC() >> process.loadMemory(operand))),
+        ADDC((process, operand) -> process.pcb.setAC(process.pcb.getAC() + operand)),
+        SUBC((process, operand) -> process.pcb.setAC(process.pcb.getAC() - operand)),
+        MULC((process, operand) -> process.pcb.setAC(process.pcb.getAC() * operand)),
+        DIVC((process, operand) -> process.pcb.setAC(process.pcb.getAC() / operand)),
+        SHRC((process, operand) -> process.pcb.setAC(process.pcb.getAC() >> operand)),
+        BR((process, operand) -> process.pcb.setPC(operand)),
+        BZ((process, operand) -> {
             if (process.pcb.getAC() == 0) process.pcb.setPC(operand);
-        })),
-        BN(((process, operand) -> {
+        }),
+        BN((process, operand) -> {
             if (process.pcb.getAC() < 0) process.pcb.setPC(operand);
-        })),
+        }),
         BP((process, operand) -> {
             if (process.pcb.getAC() > 0) process.pcb.setPC(operand);
         }),
-        BZP(((process, operand) -> {
+        BZP((process, operand) -> {
             if (process.pcb.getAC() >= 0) process.pcb.setPC(operand);
-        })),
-        BZN(((process, operand) -> {
+        }),
+        BZN((process, operand) -> {
             if (process.pcb.getAC() <= 0) process.pcb.setPC(operand);
-        })),
-        INT((OpCode::execute)),
-        PUSH(((process, operand) -> {
+        }),
+        INT(OpCode::execute),
+        PUSH((process, operand) -> {
             process.stackSegment.push(operand);
-        })),
+        }),
 
         ;
 
