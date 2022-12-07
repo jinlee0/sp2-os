@@ -41,7 +41,6 @@ public class Keyboard extends MyIO{
         SScanner scanner = SScanner.getInstance();
         int buffer = Integer.parseInt(scanner.nextLine("Process_" + process.getSerialNumber() + " >> " + "Keyboard >> "));
         int address = process.popFromStackSegment();
-        System.out.println("address: " + address);
         process.storeMemory(address, buffer);
         interruptQueue.addReadComplete(process);
     }
