@@ -8,9 +8,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public abstract class MyIO extends Thread{
     protected final BlockingQueue<Process> processBlockingQueue = new LinkedBlockingQueue<>(TASK_SIZE);
-    protected final InterruptQueue interruptQueue = InterruptQueue.getInstance();
+    protected final InterruptQueue interruptQueue;
 
     protected final static int TASK_SIZE = 10;
+
+    public MyIO(InterruptQueue interruptQueue) {
+        this.interruptQueue = interruptQueue;
+    }
 
     public abstract void run();
 

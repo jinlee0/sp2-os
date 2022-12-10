@@ -8,14 +8,8 @@ import java.util.concurrent.Semaphore;
 import java.util.function.Supplier;
 
 public class InterruptQueue {
-    private static final InterruptQueue instance = new InterruptQueue();
     private final Semaphore interruptQueueSemaphore = new Semaphore(1, true);
     private final Deque<Interrupt> interruptQueue = new ArrayDeque<>();
-
-    private InterruptQueue() {}
-    public static InterruptQueue getInstance() {
-        return instance;
-    }
 
     // Critical Section
     public void addProcessEnd(Process process) {

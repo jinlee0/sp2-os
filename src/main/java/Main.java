@@ -3,15 +3,15 @@ package main.java;
 import main.java.hw.CPU;
 import main.java.io.Keyboard;
 import main.java.io.Monitor;
-import main.java.os.FileSystem;
+import main.java.io.FileSystem;
 import main.java.os.Scheduler;
 import main.java.os.UI;
 import main.java.os.interrupt.InterruptQueue;
 
 public class Main {
-    private final InterruptQueue interruptQueue = InterruptQueue.getInstance();
-    private final Monitor monitor = Monitor.getInstance();
-    private final Keyboard keyboard = Keyboard.getInstance();
+    private final InterruptQueue interruptQueue = new InterruptQueue();
+    private final Monitor monitor = new Monitor(interruptQueue);
+    private final Keyboard keyboard = new Keyboard(interruptQueue);
     private final Scheduler scheduler = new Scheduler(interruptQueue, monitor, keyboard);
     private final CPU cpu = new CPU(scheduler);
     private final UI ui = new UI(scheduler, interruptQueue);

@@ -3,15 +3,14 @@ package main.java.io;
 import main.java.exception.InvalidInterruptCode;
 import main.java.exception.InvalidInterruptForMonitorException;
 import main.java.os.Process;
+import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
 import main.java.utils.SPrinter;
 
 public class Monitor extends MyIO{
-    private static final Monitor instance = new Monitor();
 
-    private Monitor(){}
-    public static Monitor getInstance() {
-        return instance;
+    public Monitor(InterruptQueue interruptQueue) {
+        super(interruptQueue);
     }
 
     @Override

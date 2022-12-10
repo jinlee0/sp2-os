@@ -3,15 +3,14 @@ package main.java.io;
 import main.java.exception.InvalidInterruptCode;
 import main.java.exception.InvalidInterruptForMonitorException;
 import main.java.os.Process;
+import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
 import main.java.utils.SScanner;
 
 public class Keyboard extends MyIO{
-    private static final Keyboard instance = new Keyboard();
 
-    private Keyboard(){}
-    public static Keyboard getInstance() {
-        return instance;
+    public Keyboard(InterruptQueue interruptQueue) {
+        super(interruptQueue);
     }
 
     @Override
