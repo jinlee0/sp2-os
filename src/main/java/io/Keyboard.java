@@ -1,6 +1,6 @@
 package main.java.io;
 
-import main.java.exception.InvalidInterruptCode;
+import main.java.exception.InvalidInterruptCodeException;
 import main.java.exception.InvalidInterruptForMonitorException;
 import main.java.os.Process;
 import main.java.os.interrupt.InterruptQueue;
@@ -40,8 +40,8 @@ public class Keyboard extends MyIO{
         SScanner scanner = SScanner.getInstance();
         int buffer = Integer.parseInt(scanner.nextLine("Process_" + process.getSerialNumber() + " >> " + "Keyboard >> "));
         int address = process.popFromStackSegment();
-        process.storeMemory(address, buffer);
-        interruptQueue.addReadComplete(process);
+        process.storeToDataSegment(address, buffer);
+        interruptQueue.addReadIntComplete(process);
     }
 
     public void initialize() {
@@ -68,7 +68,7 @@ public class Keyboard extends MyIO{
             for (KeyboardCode keyboardCode : values()) {
                 if(keyboardCode.ioCode == ioCode) return keyboardCode;
             }
-            throw new InvalidInterruptCode();
+            throw new InvalidInterruptCodeException();
         }
     }
 }

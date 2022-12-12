@@ -24,18 +24,30 @@ public class InterruptQueue {
     public void addTimeOut(Process process) {
         runWithInterruptQueueSemaphore(() -> interruptQueue.offerFirst(new ProcessInterrupt(EInterrupt.EProcessInterrupt.TIME_OUT, process)));
     }
-    public void addReadStart(Process process) {
-        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.READ_START, process));
+    public void addReadIntStart(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.READ_INT_START, process));
     }
-    public void addReadComplete(Process process) {
-        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.READ_COMPLETE, process));
+    public void addReadIntComplete(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.READ_INT_COMPLETE, process));
     }
     public void addWriteStart(Process process) {
-        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.WRITE_START, process));
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.WRITE_INT_START, process));
     }
     public void addWriteComplete(Process process) {
-        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.WRITE_COMPLETE, process));
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.WRITE_INT_COMPLETE, process));
     }
+    public void addOpenFileStart(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.OPEN_FILE_START, process));
+    }
+
+    public void addOpenFileComplete(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.OPEN_FILE_COMPLETE, process));
+    }
+
+    public void addCloseFileStart(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.CLOSE_FILE_START, process));
+    }
+
     public Interrupt pollInterrupt() {
         return runWithInterruptQueueSemaphore(interruptQueue::poll);
     }
@@ -59,7 +71,6 @@ public class InterruptQueue {
         }
         return null;
     }
-
 
 
     /////////////////////////

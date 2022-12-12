@@ -78,8 +78,7 @@ public class UI extends Thread {
 
     private void terminateProcess(String token) {
         try {
-            Process process = scheduler.findBySerialNumber(Long.parseLong(token));
-            if(process == null) throw new ProcessNotFound();
+            Process process = scheduler.findBySerialNumber(Long.parseLong(token)).orElseThrow(ProcessNotFound::new);
             interruptQueue.addProcessEnd(process);
             printlnln("Process_" + token + " is terminated");
         } catch (NumberFormatException e) {

@@ -12,10 +12,10 @@ public class Main {
     private final InterruptQueue interruptQueue = new InterruptQueue();
     private final Monitor monitor = new Monitor(interruptQueue);
     private final Keyboard keyboard = new Keyboard(interruptQueue);
-    private final Scheduler scheduler = new Scheduler(interruptQueue, monitor, keyboard);
+    private final FileSystem fileSystem = new FileSystem(interruptQueue);
+    private final Scheduler scheduler = new Scheduler(interruptQueue, monitor, keyboard, fileSystem);
     private final CPU cpu = new CPU(scheduler);
     private final UI ui = new UI(scheduler, interruptQueue);
-    private final FileSystem fileSystem = new FileSystem(interruptQueue);
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -24,6 +24,7 @@ public class Main {
 //        new GUIMain().run();
         main.monitor.start();
         main.keyboard.start();
+        main.fileSystem.start();
     }
 
     private void initialize() {

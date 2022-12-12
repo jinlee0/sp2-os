@@ -1,11 +1,13 @@
 package main.java.os;
 
+import main.java.io.FileSystem;
 import main.java.io.Keyboard;
 import main.java.io.Monitor;
 import main.java.os.interrupt.*;
 import main.java.utils.Logger;
 
 import java.util.ArrayDeque;
+import java.util.Optional;
 import java.util.Queue;
 
 public class Scheduler{
@@ -18,16 +20,18 @@ public class Scheduler{
     private final InterruptQueue interruptQueue;
     private final Monitor monitor;
     private final Keyboard keyboard;
+    private final FileSystem fileSystem;
 
     // working variables
     private Process runningProcess;
 
     private static final int READY_QUEUE_MAX_SIZE = 10;
 
-    public Scheduler(InterruptQueue interruptQueue, Monitor monitor, Keyboard keyboard) {
+    public Scheduler(InterruptQueue interruptQueue, Monitor monitor, Keyboard keyboard, FileSystem fileSystem) {
         this.interruptQueue = interruptQueue;
         this.monitor = monitor;
         this.keyboard = keyboard;
+        this.fileSystem = fileSystem;
     }
 
     public void handleAllInterrupts() {
@@ -55,12 +59,12 @@ public class Scheduler{
     private void removeFromReadyQueue(Process interruptedProcess) {
         readyQueue.remove(interruptedProcess);
     }
-    public Process findBySerialNumber(long serialNumber) {
-        if(runningProcess !=null && runningProcess.getSerialNumber() == serialNumber) return runningProcess;
+    public Optional<Process> findBySerialNumber(long serialNumber) {
+        if(runningProcess !=null && runningProcess.getSerialNumber() == serialNumber) return Optional.of(runningProcess);
         for (Process process : readyQueue) {
-            if(process.getSerialNumber() == serialNumber) return process;
+            if(process.getSerialNumber() == serialNumber) return Optional.of(process);
         }
-        return null;
+        return Optional.empty();
     }
     /////////////////////
 
@@ -126,19 +130,29 @@ public class Scheduler{
                 case PROCESS_END:
                     handleProcessEnd(interrupt.getProcess());
                     break;
-                case READ_START:
+                case READ_INT_START:
                     handleReadStart(interrupt.getProcess());
                     break;
-                case WRITE_START:
+                case WRITE_INT_START:
                     handleWriteStart(interrupt.getProcess());
                     break;
-                case READ_COMPLETE:
-                case WRITE_COMPLETE:
+                case READ_INT_COMPLETE:
+                case WRITE_INT_COMPLETE:
+                case OPEN_FILE_COMPLETE:
+                case CLOSE_FILE_COMPLETE:
                     handleIOComplete(interrupt.getProcess());
+                    break;
+                case OPEN_FILE_START:
+                    handleOpenFileStart(interrupt.getProcess());
                     break;
                 default:
                     break;
             }
+        }
+
+        private void handleOpenFileStart(Process process) {
+            handleIOStart();
+            fileSystem.add(process);
         }
 
         private void handleWriteStart(Process process) {
@@ -175,10 +189,12 @@ public class Scheduler{
                 scheduler.setRunningProcess(nextProcess);
             } else {
                 scheduler.removeFromReadyQueue(process);
+                scheduler.removeFromWaitQueue(process);
             }
             // Interrupt queue에서 전부 제거
             interruptQueue.removeAllOf(currProcess);
             // Wait queue에서 전부 제거
+            process.finish();
         }
 
         private void handleTimeOut(Process process) {

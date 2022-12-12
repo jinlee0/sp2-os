@@ -13,17 +13,22 @@ public class CPU extends Thread {
 
     @Override
     public void run() {
-        Logger.add("CPU run() start");
         while (Power.isOn()) {
             scheduler.handleAllInterrupts();
             scheduler.executeInstruction();
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        Logger.add("CPU run() end");
     }
 
     public void initialize() {
+        Logger.add("CPU run() start");
     }
 
     public void finish() {
+        Logger.add("CPU run() end");
     }
 }

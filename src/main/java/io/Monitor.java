@@ -1,6 +1,6 @@
 package main.java.io;
 
-import main.java.exception.InvalidInterruptCode;
+import main.java.exception.InvalidInterruptCodeException;
 import main.java.exception.InvalidInterruptForMonitorException;
 import main.java.os.Process;
 import main.java.os.interrupt.InterruptQueue;
@@ -36,7 +36,7 @@ public class Monitor extends MyIO{
     }
 
     private void handleWrite(Process process) {
-        SPrinter.getInstance().println("Process_" + process.getSerialNumber() + " >> Screen >> " + process.loadMemory(process.popFromStackSegment()) + System.lineSeparator());
+        SPrinter.getInstance().println("Process_" + process.getSerialNumber() + " >> Screen >> " + process.loadFromDataSegment(process.popFromStackSegment()) + System.lineSeparator());
         interruptQueue.addWriteComplete(process);
     }
 
@@ -64,7 +64,7 @@ public class Monitor extends MyIO{
             for (MonitorCode monitorCode : values()) {
                 if(monitorCode.ioCode == ioCode) return monitorCode;
             }
-            throw new InvalidInterruptCode();
+            throw new InvalidInterruptCodeException();
         }
     }
 }

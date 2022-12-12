@@ -1,0 +1,15 @@
+.program
+.data
+codeSize 256
+dataSize 256
+stackSize 256
+heapSize 256
+.dataEnd
+.code
+PUSH 10 // file size
+PUSH 0 // heap address
+PUSH 12 // fileID
+INT 2
+HALT 0
+.codeEnd
+.end
