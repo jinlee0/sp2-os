@@ -1,9 +1,7 @@
 package main.java.os;
 
 
-import main.java.exception.CannotLoadUninitializedMemory;
-import main.java.exception.InvalidExeFormatException;
-import main.java.exception.InvalidInterruptCodeException;
+import main.java.exception.*;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.utils.Logger;
 
@@ -94,19 +92,24 @@ public class Process {
         }
     }
     private void loadDataSegment(Scanner scanner) {
+        int codeSize = -1;
+        int dataSize = -1;
+        int stackSize = -1;
         while (true) {
             if(!scanner.hasNext()) throw new InvalidExeFormatException();
             String token = scanner.next();
             if(token.equals("") || token.startsWith("//")) continue;
-            if(token.equals(".dataEnd")) return;
+            if(token.equals(".dataEnd")) break;
             int size = Integer.parseInt(scanner.next());
             ERegister target = null;
-            if(token.equals("codeSize")) target = ERegister.CS;
-            if(token.equals("dataSize")) target = ERegister.DS;
-            if(token.equals("stackSize")) target = ERegister.SS;
-            if(token.equals("heapSize")) target = ERegister.HS;
-            processControlBlock.context.set(target, size);
+            if(token.equals("codeSize")) codeSize = size;
+            if(token.equals("dataSize")) dataSize = size;
+            if(token.equals("stackSize")) stackSize = size;
         }
+        processControlBlock.context.set(ERegister.CS, 0);
+        processControlBlock.context.set(ERegister.DS, processControlBlock.context.get(ERegister.CS) + codeSize);
+        processControlBlock.context.set(ERegister.SS, processControlBlock.context.get(ERegister.DS) + dataSize);
+        processControlBlock.context.set(ERegister.HS, processControlBlock.context.get(ERegister.SS) + stackSize);
     }
 
     public String toString() {
@@ -127,16 +130,41 @@ public class Process {
         return serialNumber;
     }
 
-    public Integer loadFromDataSegment(int operand) {
-        Integer value = dataSegment.get(operand);
-        if(value == null) throw new CannotLoadUninitializedMemory();
+    public Integer loadMemory(int address) {
+        Integer value = null;
+        if(address < processControlBlock.getContext().get(ERegister.DS))
+            throw new IllegalAccessToCodeSegmentException();
+        else if(address < processControlBlock.getContext().get(ERegister.SS))
+            value = loadFromDataSegment(address);
+        else if(address < processControlBlock.getContext().get(ERegister.HS))
+            throw new IllegalAccessToStackSegmentException();
+        else
+            value = loadFromHeapSegment(address, popFromStackSegment());
+        if(value == null)
+            throw new CannotLoadUninitializedMemory();
         return value;
     }
+
+    private Integer loadFromDataSegment(int address) {
+        return dataSegment.get(address);
+    }
+
+    private void storeToMemory(int address, int value) {
+        if(address < processControlBlock.getContext().get(ERegister.DS))
+            throw new IllegalAccessToCodeSegmentException();
+        else if(address < processControlBlock.getContext().get(ERegister.SS))
+            storeToDataSegment(address, value);
+        else if(address < processControlBlock.getContext().get(ERegister.HS))
+            throw new IllegalAccessToStackSegmentException();
+        else
+            storeToHeapSegment(address, popFromStackSegment(), value);
+    }
+
     public void storeToDataSegment(int address, int value) {
         dataSegment.put(address, value);
     }
 
-    public int loadFromHeapSegment(int objectAddress, int attributeAddress, int value) {
+    public int loadFromHeapSegment(int objectAddress, int attributeAddress) {
         return heapSegment.get(objectAddress).get(attributeAddress);
     }
 
@@ -219,17 +247,17 @@ public class Process {
     }
 
     public static class Context {
-        private final Map<ERegister, Object> contextMap = new HashMap<>();
+        private final Map<ERegister, Integer> contextMap = new HashMap<>();
 
         public Context() {
             for (ERegister eRegister : ERegister.values()) {
                 contextMap.put(eRegister, 0);
             }
         }
-        private Object get(ERegister eRegister) {
+        private Integer get(ERegister eRegister) {
             return this.contextMap.get(eRegister);
         }
-        private void set(ERegister key, Object value) {
+        private void set(ERegister key, int value) {
             this.contextMap.put(key, value);
         }
 
@@ -258,13 +286,16 @@ public class Process {
             Logger.add(process.toString());
         }),
         LDC((process, operand) -> process.processControlBlock.setAC(operand)),
-        LDA((process, operand) -> process.processControlBlock.setAC(process.loadFromDataSegment(operand))),
-        STA((process, operand) -> process.dataSegment.put(operand, process.processControlBlock.getAC())),
-        ADDA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() + process.loadFromDataSegment(operand))),
-        SUBA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() - process.loadFromDataSegment(operand))),
-        MULA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() * process.loadFromDataSegment(operand))),
-        DIVA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() / process.loadFromDataSegment(operand))),
-        SHRA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() >> process.loadFromDataSegment(operand))),
+        LDA((process, operand) -> process.processControlBlock.setAC(process.loadMemory(operand))),
+        STA((process, operand) -> {
+            process.dataSegment.put(operand, process.processControlBlock.getAC());
+            process.storeToMemory(operand, process.processControlBlock.getAC());
+        }),
+        ADDA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() + process.loadMemory(operand))),
+        SUBA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() - process.loadMemory(operand))),
+        MULA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() * process.loadMemory(operand))),
+        DIVA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() / process.loadMemory(operand))),
+        SHRA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() >> process.loadMemory(operand))),
         ADDC((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() + operand)),
         SUBC((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() - operand)),
         MULC((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() * operand)),
@@ -305,6 +336,7 @@ public class Process {
             executable.execute(process, operand);
         }
 
+        @FunctionalInterface
         private interface Executable {
             void execute(Process process, Integer operand);
         }
