@@ -5,6 +5,7 @@ import main.java.exception.NotSuchFileIdException;
 import main.java.os.Process;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
+import main.java.utils.Logger;
 
 import java.io.*;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ public class FileSystem extends MyIO {
         Boolean isEditable = fileEditableMap.get(fileName);
         if(isEditable == null) throw new NotSuchFileIdException();
         if(!isEditable) {
+            Logger.add("File " + fileName + ".txt is already opened. This process will be terminated");
             interruptQueue.addProcessEnd(process);
             return;
         }
