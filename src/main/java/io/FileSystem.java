@@ -6,9 +6,7 @@ import main.java.os.Process;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
 
-import java.awt.event.MouseAdapter;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -59,13 +57,16 @@ public class FileSystem extends MyIO {
         fileEditableMap.put(fileName, false);
 
         File file = new File("files/" + fileName + ".txt");
-        try {
-            Scanner scanner = new Scanner(file);
-            for (int i = 0; i < fileSize; i++) {
-                if(scanner.hasNext()) process.storeToHeapSegment(heapAddress, i, scanner.nextInt());
-                else process.storeToHeapSegment(heapAddress, i, 0);
+        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+            int attributeAddress = 0;
+            while(br.ready()) {
+                if(br.ready()) process.storeToHeapSegment(heapAddress, attributeAddress, br.read());
+                else process.storeToHeapSegment(heapAddress, attributeAddress, 0);
+                attributeAddress++;
             }
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

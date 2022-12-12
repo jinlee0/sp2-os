@@ -119,9 +119,17 @@ public class Process {
         for (ERegister eRegister : ERegister.values()) {
             sb.append("\t\t").append(eRegister).append(": ").append(processControlBlock.context.get(eRegister)).append(System.lineSeparator());
         }
-        sb.append("\t").append("Memory").append(System.lineSeparator());
+        sb.append("\t").append("Memory - Data").append(System.lineSeparator());
         for (Integer integer : dataSegment.keySet()) {
             sb.append("\t\t").append(integer).append(": ").append(dataSegment.get(integer)).append(System.lineSeparator());
+        }
+        sb.append("\t").append("Memory - heap").append(System.lineSeparator());
+        for (Integer objectAddress : heapSegment.keySet()) {
+            sb.append("\t\t").append(objectAddress).append(": ").append(System.lineSeparator());
+            Map<Integer, Integer> addressValueMap = heapSegment.get(objectAddress);
+            for (Integer attributeAddress : addressValueMap.keySet()) {
+                sb.append("\t\t\t").append(attributeAddress).append(": ").append(addressValueMap.get(attributeAddress)).append(System.lineSeparator());
+            }
         }
         return sb.toString();
     }
