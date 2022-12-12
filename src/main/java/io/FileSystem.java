@@ -47,7 +47,6 @@ public class FileSystem extends MyIO {
     private void handleOpen(Process process) {
         int fileName = process.popFromStackSegment();
         int heapAddress = process.popFromStackSegment();
-        int fileSize = process.popFromStackSegment();
         Boolean isEditable = fileEditableMap.get(fileName);
         if(isEditable == null) throw new NotSuchFileIdException();
         if(!isEditable) {
@@ -69,7 +68,6 @@ public class FileSystem extends MyIO {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         interruptQueue.addOpenFileComplete(process);
     }
 

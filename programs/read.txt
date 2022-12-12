@@ -6,7 +6,6 @@ stackSize 256
 heapSize 256
 .dataEnd
 .code
-PUSH 10 // file size
 PUSH 0 // heap address
 PUSH 12 // fileID
 INT 2
