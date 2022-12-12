@@ -6,12 +6,14 @@ stackSize 100
 heapSize 100
 .dataEnd
 .code
-PUSH 300 // heap address
-PUSH 12 // fileID
-INT 2
-PUSH 0 // heap address 1-1
-PUSH 300 // heap address 1
-INT 0
+PUSH 12     // fileID to read
+PUSH 100    // pointer address for file
+INT 2       // open file -> read and write in heap
+LDA 100     // 100.1 (ex. arr[1])
+ADDC 1
+STA 101
+PUSHA 101
+INT 0       // write
 HALT 0
 .codeEnd
 .end

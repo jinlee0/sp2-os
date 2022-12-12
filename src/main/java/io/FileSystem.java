@@ -10,7 +10,6 @@ import main.java.utils.Logger;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 public class FileSystem extends MyIO {
     private final Map<Integer, Boolean> fileEditableMap = new HashMap<>();
@@ -37,7 +36,7 @@ public class FileSystem extends MyIO {
                     handleOpen(process);
                     break;
                 case CLOSE:
-//                    handleWrite(process);
+                    handleClose(process);
                     break;
             }
         } catch (InterruptedException e) {
@@ -45,28 +44,23 @@ public class FileSystem extends MyIO {
         }
     }
 
+    private void handleClose(Process process) {
+
+
+    }
+
     private void handleOpen(Process process) {
-        int fileName = process.popFromStackSegment();
-        int heapAddress = process.popFromStackSegment();
-        Boolean isEditable = fileEditableMap.get(fileName);
+        int pointerAddressForFile = process.popFromStackSegment();
+        int fileId = process.popFromStackSegment();
+        Boolean isEditable = fileEditableMap.get(fileId);
         if(isEditable == null) throw new NotSuchFileIdException();
         if(!isEditable) {
-            Logger.add("File " + fileName + ".txt is already opened. This process will be terminated");
+            Logger.add("File " + fileId + ".txt is already opened. This process will be terminated");
             interruptQueue.addProcessEnd(process);
             return;
         }
-        fileEditableMap.put(fileName, false);
-
-        File file = new File("files/" + fileName + ".txt");
-        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
-            int attributeAddress = 0;
-            while(br.ready())
-                process.storeToHeapSegment(heapAddress, attributeAddress++, br.read());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        fileEditableMap.put(fileId, false);
+        process.allocateHeap(new File("files/" + fileId + ".txt"), pointerAddressForFile);
         interruptQueue.addOpenFileComplete(process);
     }
 

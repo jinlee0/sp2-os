@@ -5,14 +5,15 @@ import main.java.exception.*;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.utils.Logger;
 
+import java.io.*;
 import java.util.*;
 
 public class Process {
     private final ProcessControlBlock processControlBlock = new ProcessControlBlock();
     private final List<Instruction> codeSegment = new ArrayList<>();
+    private final Map<Integer, Integer> dataSegment = new HashMap<>();
     private final Stack<Integer> stackSegment = new Stack<>();
     private final Map<Integer, Map<Integer, Integer>> heapSegment = new HashMap<>();
-    private final Map<Integer, Integer> dataSegment = new HashMap<>();
     private Timer timer;
 
     private final InterruptQueue interruptQueue;
@@ -95,21 +96,23 @@ public class Process {
         int codeSize = -1;
         int dataSize = -1;
         int stackSize = -1;
+        int heapSize = -1;
         while (true) {
             if(!scanner.hasNext()) throw new InvalidExeFormatException();
             String token = scanner.next();
             if(token.equals("") || token.startsWith("//")) continue;
             if(token.equals(".dataEnd")) break;
             int size = Integer.parseInt(scanner.next());
-            ERegister target = null;
             if(token.equals("codeSize")) codeSize = size;
             if(token.equals("dataSize")) dataSize = size;
             if(token.equals("stackSize")) stackSize = size;
+            if(token.equals("heapSize")) heapSize = size;
         }
         processControlBlock.context.set(ERegister.CS, 0);
         processControlBlock.context.set(ERegister.DS, processControlBlock.context.get(ERegister.CS) + codeSize);
         processControlBlock.context.set(ERegister.SS, processControlBlock.context.get(ERegister.DS) + dataSize);
         processControlBlock.context.set(ERegister.HS, processControlBlock.context.get(ERegister.SS) + stackSize);
+        Integer size = processControlBlock.context.get(ERegister.HS);
     }
 
     public String toString() {
@@ -139,15 +142,16 @@ public class Process {
     }
 
     public Integer retrieveFromMemory(int address) {
-        Integer value = null;
+        Integer value;
         if(address < processControlBlock.getContext().get(ERegister.DS))
             throw new IllegalAccessToCodeSegmentException();
         else if(address < processControlBlock.getContext().get(ERegister.SS))
             value = dataSegment.get(address);
         else if(address < processControlBlock.getContext().get(ERegister.HS))
             throw new IllegalAccessToStackSegmentException();
-        else
-            value = heapSegment.get(address).get(this.popFromStackSegment());
+        else{
+            value = heapSegment.get((address /10) * 10).get(address);
+        }
         if(value == null)
             throw new CannotLoadUninitializedMemory();
         return value;
@@ -166,7 +170,7 @@ public class Process {
 
     public void storeToHeapSegment(int heapAddress, int attributeAddress, int value) {
         if(!heapSegment.containsKey(heapAddress)) heapSegment.put(heapAddress, new HashMap<>());
-        heapSegment.get(heapAddress).put(attributeAddress, value);
+        heapSegment.get(heapAddress).put(heapAddress + attributeAddress, value);
     }
 
     public int popFromStackSegment() {
@@ -175,6 +179,30 @@ public class Process {
 
     public void finish() {
         // 리소스 반환
+    }
+
+    private int allocateHeap() {
+        for (int i = processControlBlock.getContext().get(ERegister.HS); ; i += 10) {
+            if(!heapSegment.containsKey(i)) {
+                heapSegment.put(i, new HashMap<>());
+                return i;
+            }
+        }
+    }
+
+    public void allocateHeap(File file, int pointerAddressForFile) {
+        int heapAddress = allocateHeap();
+        storeToMemory(pointerAddressForFile, heapAddress);
+        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+            int attributeAddress = 0;
+            while(br.ready()){
+                storeToHeapSegment(heapAddress, attributeAddress++, br.read());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -214,7 +242,6 @@ public class Process {
 
     private static class ProcessControlBlock {
         private final Context context = new Context();
-        private final List<MyFile> files = new ArrayList<>();
 
         // Status
         private ProcessStatus eStatus = ProcessStatus.NONE;
@@ -258,10 +285,10 @@ public class Process {
         }
 
         public int getPC() {
-            return (int) this.get(ERegister.PC);
+            return this.get(ERegister.PC);
         }
         public int getAC() {
-            return (int) this.get(ERegister.AC);
+            return this.get(ERegister.AC);
         }
         public void setPC(int value) {
             this.set(ERegister.PC, value);
@@ -319,7 +346,9 @@ public class Process {
         PUSH((process, operand) -> {
             process.stackSegment.push(operand);
         }),
-
+        PUSHA(((process, operand) -> {
+            process.stackSegment.push(process.retrieveFromMemory(operand));
+        }))
         ;
 
         private final Executable executable;
