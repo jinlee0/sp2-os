@@ -42,7 +42,7 @@ public class Keyboard extends MyIO{
         while(input.isBlank()) input = scanner.nextLine("Process_" + process.getSerialNumber() + " >> " + "Keyboard >> ");
         int buffer = Integer.parseInt(input);
         int address = process.popFromStackSegment();
-        process.storeToDataSegment(address, buffer);
+        process.storeToMemory(address, buffer);
         interruptQueue.addReadIntComplete(process);
     }
 

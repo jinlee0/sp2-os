@@ -139,7 +139,6 @@ public class Scheduler{
                 case READ_INT_COMPLETE:
                 case WRITE_INT_COMPLETE:
                 case OPEN_FILE_COMPLETE:
-                    handleOpenFileComplete(interrupt.getProcess());
                 case CLOSE_FILE_COMPLETE:
                     handleIOComplete(interrupt.getProcess());
                     break;
@@ -149,10 +148,6 @@ public class Scheduler{
                 default:
                     break;
             }
-        }
-
-        private void handleOpenFileComplete(Process process) {
-
         }
 
         private void handleOpenFileStart(Process process) {

@@ -60,11 +60,8 @@ public class FileSystem extends MyIO {
         File file = new File("files/" + fileName + ".txt");
         try(BufferedReader br = new BufferedReader(new FileReader(file))) {
             int attributeAddress = 0;
-            while(br.ready()) {
-                if(br.ready()) process.storeToHeapSegment(heapAddress, attributeAddress, br.read());
-                else process.storeToHeapSegment(heapAddress, attributeAddress, 0);
-                attributeAddress++;
-            }
+            while(br.ready())
+                process.storeToHeapSegment(heapAddress, attributeAddress++, br.read());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

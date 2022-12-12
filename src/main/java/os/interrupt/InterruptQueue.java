@@ -30,10 +30,10 @@ public class InterruptQueue {
     public void addReadIntComplete(Process process) {
         addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.READ_INT_COMPLETE, process));
     }
-    public void addWriteStart(Process process) {
+    public void addWriteIntStart(Process process) {
         addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.WRITE_INT_START, process));
     }
-    public void addWriteComplete(Process process) {
+    public void addWriteIntComplete(Process process) {
         addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.WRITE_INT_COMPLETE, process));
     }
     public void addOpenFileStart(Process process) {

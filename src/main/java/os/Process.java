@@ -138,42 +138,30 @@ public class Process {
         return serialNumber;
     }
 
-    public Integer loadMemory(int address) {
+    public Integer retrieveFromMemory(int address) {
         Integer value = null;
         if(address < processControlBlock.getContext().get(ERegister.DS))
             throw new IllegalAccessToCodeSegmentException();
         else if(address < processControlBlock.getContext().get(ERegister.SS))
-            value = loadFromDataSegment(address);
+            value = dataSegment.get(address);
         else if(address < processControlBlock.getContext().get(ERegister.HS))
             throw new IllegalAccessToStackSegmentException();
         else
-            value = loadFromHeapSegment(address, popFromStackSegment());
+            value = heapSegment.get(address).get(this.popFromStackSegment());
         if(value == null)
             throw new CannotLoadUninitializedMemory();
         return value;
     }
 
-    private Integer loadFromDataSegment(int address) {
-        return dataSegment.get(address);
-    }
-
-    private void storeToMemory(int address, int value) {
+    public void storeToMemory(int address, int value) {
         if(address < processControlBlock.getContext().get(ERegister.DS))
             throw new IllegalAccessToCodeSegmentException();
         else if(address < processControlBlock.getContext().get(ERegister.SS))
-            storeToDataSegment(address, value);
+            dataSegment.put(address, value);
         else if(address < processControlBlock.getContext().get(ERegister.HS))
-            throw new IllegalAccessToStackSegmentException();
-        else
             storeToHeapSegment(address, popFromStackSegment(), value);
-    }
-
-    public void storeToDataSegment(int address, int value) {
-        dataSegment.put(address, value);
-    }
-
-    public int loadFromHeapSegment(int objectAddress, int attributeAddress) {
-        return heapSegment.get(objectAddress).get(attributeAddress);
+        else
+            throw new IllegalMemoryAccessException();
     }
 
     public void storeToHeapSegment(int heapAddress, int attributeAddress, int value) {
@@ -294,16 +282,16 @@ public class Process {
             Logger.add(process.toString());
         }),
         LDC((process, operand) -> process.processControlBlock.setAC(operand)),
-        LDA((process, operand) -> process.processControlBlock.setAC(process.loadMemory(operand))),
+        LDA((process, operand) -> process.processControlBlock.setAC(process.retrieveFromMemory(operand))),
         STA((process, operand) -> {
             process.dataSegment.put(operand, process.processControlBlock.getAC());
             process.storeToMemory(operand, process.processControlBlock.getAC());
         }),
-        ADDA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() + process.loadMemory(operand))),
-        SUBA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() - process.loadMemory(operand))),
-        MULA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() * process.loadMemory(operand))),
-        DIVA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() / process.loadMemory(operand))),
-        SHRA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() >> process.loadMemory(operand))),
+        ADDA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() + process.retrieveFromMemory(operand))),
+        SUBA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() - process.retrieveFromMemory(operand))),
+        MULA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() * process.retrieveFromMemory(operand))),
+        DIVA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() / process.retrieveFromMemory(operand))),
+        SHRA((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() >> process.retrieveFromMemory(operand))),
         ADDC((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() + operand)),
         SUBC((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() - operand)),
         MULC((process, operand) -> process.processControlBlock.setAC(process.processControlBlock.getAC() * operand)),
@@ -351,7 +339,7 @@ public class Process {
     }
 
     public enum IOCode {
-        WRITE_INT(0, process -> process.interruptQueue.addWriteStart(process)),
+        WRITE_INT(0, process -> process.interruptQueue.addWriteIntStart(process)),
         READ_INT(1, process -> process.interruptQueue.addReadIntStart(process)),
         OPEN_FILE(2, process -> process.interruptQueue.addOpenFileStart(process)),
         CLOSE_FILE(3, process -> process.interruptQueue.addCloseFileStart(process)),
