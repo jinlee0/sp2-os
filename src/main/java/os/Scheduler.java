@@ -27,6 +27,7 @@ public class Scheduler{
     private Process runningProcess;
 
     // GUI listener
+    private ConcurrentLinkedDeque<Function<ProcessInterrupt, Boolean>> interruptHandlingPerOnceListeners = new ConcurrentLinkedDeque<>();
     private ConcurrentLinkedDeque<Consumer<ProcessInterrupt>> interruptHandlingListeners = new ConcurrentLinkedDeque<>();
 
     private static final int READY_QUEUE_MAX_SIZE = 10;
@@ -55,6 +56,7 @@ public class Scheduler{
     }
 
     private void enReadyQueue(Process process) {
+        process.ready();
         readyQueue.offer(process);
     }
     private Process deReadyQueue() {
@@ -77,7 +79,8 @@ public class Scheduler{
 
     // critical section
     private void enWaitQueue(Process process) {
-            waitQueue.offer(process);
+        process.waiting();
+        waitQueue.offer(process);
     }
     private void removeFromWaitQueue(Process process) {
         waitQueue.remove(process);
@@ -144,16 +147,26 @@ public class Scheduler{
             EInterrupt eInterrupt = interrupt.getEInterrupt();
             Logger.add("Handle Interrupt: " + eInterrupt);
 
-            List<ProcessInterrupt> removeList = new ArrayList<>();
+            handleListeners(interrupt);
+
+            handle(interrupt);
+        }
+
+        private void handleListeners(Interrupt interrupt) {
+            List<Function<ProcessInterrupt, Boolean>> removeList = new ArrayList<>();
+            interruptHandlingPerOnceListeners.forEach(listener -> {
+                if(interrupt instanceof ProcessInterrupt) {
+                    if (listener.apply((ProcessInterrupt) interrupt)) {
+                    removeList.add(listener);
+                    }
+                }
+            });
+            interruptHandlingPerOnceListeners.removeAll(removeList);
             interruptHandlingListeners.forEach(listener -> {
                 if(interrupt instanceof ProcessInterrupt) {
                     listener.accept((ProcessInterrupt) interrupt);
-                    removeList.add((ProcessInterrupt) interrupt);
                 }
             });
-            interruptHandlingListeners.removeAll(removeList);
-
-            handle(interrupt);
         }
 
         private void handle(Interrupt interrupt) {
@@ -205,22 +218,22 @@ public class Scheduler{
         }
 
         private void handleCloseFileStart(Process process) {
-            handleIOStart();
+            handleIOStart(process);
             fileSystem.add(process);
         }
 
         private void handleOpenFileStart(Process process) {
-            handleIOStart();
+            handleIOStart(process);
             fileSystem.add(process);
         }
 
         private void handleWriteStart(Process process) {
-            handleIOStart();
+            handleIOStart(process);
             monitor.add(process);
         }
 
         private void handleReadStart(Process process) {
-            handleIOStart();
+            handleIOStart(process);
             keyboard.add(process);
         }
 
@@ -229,11 +242,13 @@ public class Scheduler{
             scheduler.enReadyQueue(process);
         }
 
-        private void handleIOStart() {
-            Process currProcess = scheduler.getRunningProcess();
-            currProcess.waiting();
-            scheduler.enWaitQueue(currProcess);
-            scheduler.setRunningProcess(scheduler.deReadyQueue());
+        private void handleIOStart(Process process) {
+            removeFromReadyQueue(process);
+            process.waiting();
+            scheduler.enWaitQueue(process);
+            if(runningProcess == process) {
+                scheduler.setRunningProcess(scheduler.deReadyQueue());
+            }
         }
 
         private void handleProcessStart(Process process) {
@@ -266,6 +281,11 @@ public class Scheduler{
     }
 
     // 일회용
+    public void addInterruptHandlingListenerPerOnce(Function<ProcessInterrupt, Boolean> listener) {
+        interruptHandlingPerOnceListeners.add(listener);
+//        interruptHandlingListeners.add(listener);
+    }
+
     public void addInterruptHandlingListener(Consumer<ProcessInterrupt> listener) {
         interruptHandlingListeners.add(listener);
     }

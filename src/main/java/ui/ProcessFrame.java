@@ -73,15 +73,19 @@ public class ProcessFrame extends JFrame {
                 }
             }
         });
-        scheduler.addInterruptHandlingListener(interrupt -> {
+        scheduler.addInterruptHandlingListenerPerOnce(interrupt -> {
             if (interrupt.getProcess() == process && interrupt.getEInterrupt() == EInterrupt.EProcessInterrupt.READ_INT_START) {
                 keyboardField.setEditable(true);
+                return true;
             }
+            return false;
         });
-        scheduler.addInterruptHandlingListener(interrupt -> {
+        scheduler.addInterruptHandlingListenerPerOnce(interrupt -> {
             if (interrupt.getProcess() == process && interrupt.getEInterrupt() == EInterrupt.EProcessInterrupt.READ_INT_COMPLETE) {
                 keyboardField.setEditable(false);
+                return true;
             }
+            return false;
         });
         ///////////
         JFrame thisFrame = this;
@@ -92,14 +96,16 @@ public class ProcessFrame extends JFrame {
         };
         Logger.addLoggingListener(loggingListener);
 
-        scheduler.addInterruptHandlingListener(interrupt -> {
+        scheduler.addInterruptHandlingListenerPerOnce(interrupt -> {
             if (interrupt.getProcess() == process && interrupt.getEInterrupt() == EInterrupt.EProcessInterrupt.PROCESS_END) {
                 logArea.append("end");
                 scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
                 keyboard.stopAllThreadsOf(process);
                 monitor.removeWriteListner(writeListenerForMonitor);
                 Logger.removeLoggingListner(loggingListener);
+                return true;
             }
+            return false;
         });
 
 

@@ -3,7 +3,6 @@ package main.java.ui;
 import main.java.io.Keyboard;
 import main.java.io.Monitor;
 import main.java.os.Loader;
-import main.java.os.Process;
 import main.java.os.Scheduler;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.os.interrupt.ProcessInterrupt;
@@ -53,10 +52,12 @@ public class MainPanel extends JPanel {
                     super.mouseClicked(e);
                     try {
                         ProcessInterrupt processInterrupt = interruptQueue.addProcessStart(loader.load(programName));
-                        scheduler.addInterruptHandlingListener((interrupt) -> {
+                        scheduler.addInterruptHandlingListenerPerOnce((interrupt) -> {
                             if(interrupt == processInterrupt) {
                                 new ProcessFrame(scheduler, interruptQueue, keyboard, monitor, interrupt.getProcess());
+                                return true;
                             }
+                            return false;
                         });
                     } catch (FileNotFoundException ex) {
                         JOptionPane.showMessageDialog(null, "File " + programName + " is not found");

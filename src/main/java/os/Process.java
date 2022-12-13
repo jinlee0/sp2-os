@@ -52,12 +52,12 @@ public class Process {
 
     public void ready() {
         processControlBlock.setStatus(ProcessStatus.READY);
-        timer.cancel();
+        if(timer != null) timer.cancel();
     }
 
     public void waiting() {
         processControlBlock.setStatus(ProcessStatus.WAITING);
-        timer.cancel();
+        if(timer != null) timer.cancel();
     }
 
     private void executeOneLine() {
