@@ -36,7 +36,9 @@ public class Monitor extends MyIO{
     }
 
     private void handleWrite(Process process) {
-        SPrinter.getInstance().println("Process_" + process.getSerialNumber() + " >> Screen >> " + process.retrieveFromMemory(process.popFromStackSegment()) + System.lineSeparator());
+        int address = process.popFromStackSegment();
+        System.out.println(address);
+        SPrinter.getInstance().println("Process_" + process.getSerialNumber() + " >> Screen >> " + process.retrieveFromMemory(address) + System.lineSeparator());
         interruptQueue.addWriteIntComplete(process);
     }
 

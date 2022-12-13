@@ -48,6 +48,10 @@ public class InterruptQueue {
         addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.CLOSE_FILE_START, process));
     }
 
+    public void addCloseFileComplete(Process process) {
+        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.CLOSE_FILE_COMPLETE, process));
+    }
+
     public Interrupt pollInterrupt() {
         return runWithInterruptQueueSemaphore(interruptQueue::poll);
     }

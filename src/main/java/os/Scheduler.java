@@ -136,18 +136,26 @@ public class Scheduler{
                 case WRITE_INT_START:
                     handleWriteStart(interrupt.getProcess());
                     break;
+                case OPEN_FILE_START:
+                    handleOpenFileStart(interrupt.getProcess());
+                    break;
+                case CLOSE_FILE_START:
+                    handleCloseFileStart(interrupt.getProcess());
+                    break;
                 case READ_INT_COMPLETE:
                 case WRITE_INT_COMPLETE:
                 case OPEN_FILE_COMPLETE:
                 case CLOSE_FILE_COMPLETE:
                     handleIOComplete(interrupt.getProcess());
                     break;
-                case OPEN_FILE_START:
-                    handleOpenFileStart(interrupt.getProcess());
-                    break;
                 default:
                     break;
             }
+        }
+
+        private void handleCloseFileStart(Process process) {
+            handleIOStart();
+            fileSystem.add(process);
         }
 
         private void handleOpenFileStart(Process process) {

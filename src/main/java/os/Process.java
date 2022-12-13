@@ -96,7 +96,6 @@ public class Process {
         int codeSize = -1;
         int dataSize = -1;
         int stackSize = -1;
-        int heapSize = -1;
         while (true) {
             if(!scanner.hasNext()) throw new InvalidExeFormatException();
             String token = scanner.next();
@@ -106,13 +105,12 @@ public class Process {
             if(token.equals("codeSize")) codeSize = size;
             if(token.equals("dataSize")) dataSize = size;
             if(token.equals("stackSize")) stackSize = size;
-            if(token.equals("heapSize")) heapSize = size;
+            if(token.equals("heapSize")) ;
         }
         processControlBlock.context.set(ERegister.CS, 0);
         processControlBlock.context.set(ERegister.DS, processControlBlock.context.get(ERegister.CS) + codeSize);
         processControlBlock.context.set(ERegister.SS, processControlBlock.context.get(ERegister.DS) + dataSize);
         processControlBlock.context.set(ERegister.HS, processControlBlock.context.get(ERegister.SS) + stackSize);
-        Integer size = processControlBlock.context.get(ERegister.HS);
     }
 
     public String toString() {
@@ -190,58 +188,90 @@ public class Process {
         }
     }
 
-    public void allocateHeap(File file, int pointerAddressForFile) {
-        int heapAddress = allocateHeap();
-        storeToMemory(pointerAddressForFile, heapAddress);
+    public FileControlBlock openFile(File file, int heapAddress, FileOpenMode openMode) {
         try(BufferedReader br = new BufferedReader(new FileReader(file))) {
             int attributeAddress = 0;
             while(br.ready()){
                 storeToHeapSegment(heapAddress, attributeAddress++, br.read());
             }
+            int fileId = Integer.parseInt(file.getName().split("\\.")[0]);
+            FileControlBlock fileControlBlock = new FileControlBlock(fileId, heapAddress, attributeAddress, openMode);
+            processControlBlock.getFileControlBlocks().put(heapAddress, fileControlBlock);
+            return fileControlBlock;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
+    public FileOpenMode closeFile(int heapAddress) {
+        FileControlBlock fileControlBlock = processControlBlock.getFileControlBlocks().get(heapAddress);
+        processControlBlock.getFileControlBlocks().remove(heapAddress);
+        return fileControlBlock.getFileOpenMode();
+    }
 
-    public static class Instruction {
-        private final OpCode opCode;
-        private final int operand;
+    private class FileControlBlock {
 
-        public Instruction(String line) {
-            StringTokenizer st = new StringTokenizer(line);
-            opCode = OpCode.valueOf(st.nextToken().trim().toUpperCase(Locale.ROOT));
-            operand = Integer.parseInt(st.nextToken());
+        private final int fileId;
+        private int pointerAddress;
+        private int currentPosition;
+        private int size;
+        private final FileOpenMode fileOpenMode;
+
+        public FileControlBlock(int fileId, int pointerAddress, int size, FileOpenMode openMode) {
+            this.fileId = fileId;
+            this.pointerAddress = pointerAddress;
+            this.currentPosition = 0;
+            this.size = size;
+            this.fileOpenMode = openMode;
         }
-        public OpCode getOpCode() {
-            return opCode;
+
+        public int getFileId() {
+            return fileId;
         }
-        public int getOperand() {
-            return operand;
+        public int getPointerAddress() {
+            return pointerAddress;
         }
-        @Override
-        public String toString() {
-            return "Instruction{" +
-                    "opCode=" + opCode +
-                    ", operand=" + operand +
-                    '}';
+        public int getCurrentPosition() {
+            return currentPosition;
+        }
+        public FileOpenMode getFileOpenMode() {
+            return fileOpenMode;
+        }
+        public int getSize() {
+            return size;
+        }
+        public void setCurrentPosition(int currentPosition) {
+            this.currentPosition = currentPosition;
+        }
+
+        public void setSize(int size) {
+            this.size = size;
         }
     }
 
-    private class MyFile {
-        private String fileName;
-        private FileControlMode fileControlMode;
-        private List<Integer> data;
-    }
-    public enum FileControlMode {
-        READ,
-        WRITE,
+    public enum FileOpenMode {
+        READ(0), WRITE(1),
+        ;
+        private final int code;
+
+        FileOpenMode(int code) {
+            this.code = code;
+        }
+
+        public static FileOpenMode of(int code) {
+            for (FileOpenMode fileOpenMode : values()) {
+                if(fileOpenMode.code == code) return fileOpenMode;
+            }
+            return null;
+        }
     }
 
-    private static class ProcessControlBlock {
+    private class ProcessControlBlock {
         private final Context context = new Context();
+        private final Map<Integer, FileControlBlock> fileControlBlocks = new HashMap<>();
 
         // Status
         private ProcessStatus eStatus = ProcessStatus.NONE;
@@ -253,6 +283,9 @@ public class Process {
             return context.getPC();
         }
         public int getAC() { return context.getAC(); }
+        public Map<Integer, FileControlBlock> getFileControlBlocks() {
+            return fileControlBlocks;
+        }
         public void setAC(int value) { context.setAC(value); }
         public void setPC(int address) {
             context.setPC(address);
@@ -303,6 +336,30 @@ public class Process {
         CS, DS, SS, HS,
     }
 
+    public static class Instruction {
+        private final OpCode opCode;
+        private final int operand;
+
+        public Instruction(String line) {
+            StringTokenizer st = new StringTokenizer(line);
+            opCode = OpCode.valueOf(st.nextToken().trim().toUpperCase(Locale.ROOT));
+            operand = Integer.parseInt(st.nextToken());
+        }
+        public OpCode getOpCode() {
+            return opCode;
+        }
+        public int getOperand() {
+            return operand;
+        }
+        @Override
+        public String toString() {
+            return "Instruction{" +
+                    "opCode=" + opCode +
+                    ", operand=" + operand +
+                    '}';
+        }
+    }
+
     private enum OpCode {
         HALT((process, operand) -> {
             process.interruptQueue.addProcessEnd(process);
@@ -348,6 +405,10 @@ public class Process {
         }),
         PUSHA(((process, operand) -> {
             process.stackSegment.push(process.retrieveFromMemory(operand));
+        })),
+        MALC(((process, operand) -> {
+            int heapAddress = process.allocateHeap();
+            process.storeToMemory(operand, heapAddress);
         }))
         ;
 

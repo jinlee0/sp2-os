@@ -1,7 +1,7 @@
 package main.java.io;
 
+import main.java.exception.InvalidFileOpenModeException;
 import main.java.exception.InvalidInterruptCodeException;
-import main.java.exception.NotSuchFileIdException;
 import main.java.os.Process;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
@@ -45,23 +45,54 @@ public class FileSystem extends MyIO {
     }
 
     private void handleClose(Process process) {
-
-
+        int fileId = process.popFromStackSegment();
+        Process.FileOpenMode fileOpenMode = process.closeFile(fileId);
+        if(fileOpenMode == Process.FileOpenMode.WRITE) fileEditableMap.put(fileId, true);
+        interruptQueue.addCloseFileComplete(process);
     }
 
     private void handleOpen(Process process) {
-        int pointerAddressForFile = process.popFromStackSegment();
+        int mode = process.popFromStackSegment();
         int fileId = process.popFromStackSegment();
-        Boolean isEditable = fileEditableMap.get(fileId);
-        if(isEditable == null) throw new NotSuchFileIdException();
-        if(!isEditable) {
-            Logger.add("File " + fileId + ".txt is already opened. This process will be terminated");
+        int pointerAddressForFile = process.popFromStackSegment();
+        File file = new File("files/" + fileId + ".txt");
+        Process.FileOpenMode fileOpenMode = Process.FileOpenMode.of(mode);
+        switch (fileOpenMode) {
+            case READ:
+                handleOpenToRead(process, fileId, file);
+                break;
+            case WRITE:
+                handleOpenToWrite(process, fileId, file);
+                break;
+            default:
+                throw new InvalidFileOpenModeException();
+        }
+        process.openFile(file, pointerAddressForFile, fileOpenMode);
+        interruptQueue.addOpenFileComplete(process);
+    }
+
+    private void handleOpenToWrite(Process process, int fileId, File file) {
+        try {
+            if(!file.createNewFile()){
+                Boolean isEditable = fileEditableMap.get(fileId);
+                if(!isEditable) {
+                    Logger.add("File " + fileId + ".txt is already opened for writing. This process will be terminated");
+                    interruptQueue.addProcessEnd(process);
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        fileEditableMap.put(fileId, false);
+    }
+
+    private void handleOpenToRead(Process process, int fileId, File file) {
+        if(! file.exists()) {
+            Logger.add("File " + fileId + ".txt is not found. This process will be terminated");
             interruptQueue.addProcessEnd(process);
             return;
         }
-        fileEditableMap.put(fileId, false);
-        process.allocateHeap(new File("files/" + fileId + ".txt"), pointerAddressForFile);
-        interruptQueue.addOpenFileComplete(process);
     }
 
     public void initialize(){

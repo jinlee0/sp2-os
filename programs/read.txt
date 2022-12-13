@@ -6,14 +6,13 @@ stackSize 100
 heapSize 100
 .dataEnd
 .code
-PUSH 12     // fileID to read
-PUSH 100    // pointer address for file
-INT 2       // open file -> read and write in heap
-LDA 100     // 100.1 (ex. arr[1])
-ADDC 1
-STA 101
-PUSHA 101
-INT 0       // write
+MALC 100    // 힙 할당
+PUSHA 100   // openFile(12:fileId, 100:addressForPointer, 0:READ) allocate heap and write in addressForPointer, write file in heap
+PUSH 12
+PUSH 0
+INT 2
+PUSHA 100   // closeFile(100:pointer) deallocate heap and unlock file
+INT 3
 HALT 0
 .codeEnd
 .end
