@@ -65,6 +65,7 @@ public class ProcessFrame extends JFrame {
                 super.keyPressed(e);
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     String text = keyboardField.getText();
+                    if(text.isBlank()) return;
                     keyboard.addInput(process, text);
                     monitorArea.append("input << " + text + System.lineSeparator());
                     keyboardField.setText("");

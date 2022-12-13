@@ -118,7 +118,7 @@ public class Process {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Process_").append(serialNumber).append("의 종료 직전 상태").append(System.lineSeparator());
+        sb.append("Process_").append(serialNumber).append("의 상태").append(System.lineSeparator());
         sb.append("\t").append("PCB").append(System.lineSeparator());
         for (ERegister eRegister : ERegister.values()) {
             sb.append("\t\t").append(eRegister).append(": ").append(processControlBlock.context.get(eRegister)).append(System.lineSeparator());

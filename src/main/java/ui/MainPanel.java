@@ -3,11 +3,13 @@ package main.java.ui;
 import main.java.io.Keyboard;
 import main.java.io.Monitor;
 import main.java.os.Loader;
+import main.java.os.Process;
 import main.java.os.Scheduler;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.os.interrupt.ProcessInterrupt;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -30,9 +32,14 @@ public class MainPanel extends JPanel {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         MainPanel mainPanel = this;
+
+        JPanel programsPanel = new JPanel();
+        mainPanel.add(programsPanel);
+        programsPanel.setLayout(new BoxLayout(programsPanel, BoxLayout.Y_AXIS));
+
         programs.forEach(programName -> {
             JPanel panel = new JPanel();
-            mainPanel.add(panel);
+            programsPanel.add(panel);
             panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
             JLabel label = new JLabel(programName);
@@ -56,9 +63,16 @@ public class MainPanel extends JPanel {
                     }
                 }
             });
-
-
         });
+
+        TextArea schedulerInfoArea = new TextArea();
+        mainPanel.add(schedulerInfoArea);
+        schedulerInfoArea.setEditable(false);
+
+        scheduler.setListener(theScheduler -> {
+            schedulerInfoArea.setText(theScheduler.toString());
+        });
+
     }
 
     public void finish() {

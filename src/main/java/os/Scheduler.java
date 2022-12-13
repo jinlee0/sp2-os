@@ -39,8 +39,10 @@ public class Scheduler{
     }
 
     public void handleAllInterrupts() {
-        while(interruptQueue.hasInterrupt())
+        while(interruptQueue.hasInterrupt()) {
             interruptHandler.handle();
+            schedulerListener.accept(this);
+        }
     }
 
     public void executeInstruction() {
@@ -49,6 +51,8 @@ public class Scheduler{
             if (runningProcess == null) return;
         }
         runningProcess.run();
+        schedulerListener.accept(this);
+        System.out.println(this);
     }
 
     private void enReadyQueue(Process process) {
@@ -99,6 +103,20 @@ public class Scheduler{
         processes.forEach(process -> {
             interruptHandler.handleProcessEnd(process);
         });
+    }
+
+    @Override
+    public String toString() {
+        String re = "";
+        for (Process process : readyQueue) {
+            re += process + System.lineSeparator();
+        }
+        String wa = "";
+        for (Process process : waitQueue) {
+            wa += process + System.lineSeparator();
+        }
+        return "readyQueue=" + re + System.lineSeparator() +
+                "waitQueue=" + wa;
     }
 
     private class InterruptHandler {
@@ -238,5 +256,10 @@ public class Scheduler{
     // 일회용
     public void addInterruptHandlingListener(Consumer<ProcessInterrupt> listener) {
         interruptHandlingListeners.add(listener);
+    }
+
+    private Consumer<Scheduler> schedulerListener;
+    public void setListener(Consumer<Scheduler> listener) {
+        schedulerListener = listener;
     }
 }

@@ -29,7 +29,6 @@ public class MainFrame extends JFrame {
         });
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.mainPanel = new MainPanel(scheduler, interruptQueue, keyboard, monitor);
-
         this.add(mainPanel);
 
         this.pack();
