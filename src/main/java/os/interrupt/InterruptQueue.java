@@ -12,11 +12,15 @@ public class InterruptQueue {
     private final Deque<Interrupt> interruptQueue = new ArrayDeque<>();
 
     // Critical Section
-    public void addProcessEnd(Process process) {
-        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_END, process));
+    public ProcessInterrupt addProcessEnd(Process process) {
+        ProcessInterrupt interrupt = new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_END, process);
+        addInterrupt(interrupt);
+        return interrupt;
     }
-    public void addProcessStart(Process process) {
-        addInterrupt(new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_START, process));
+    public ProcessInterrupt addProcessStart(Process process) {
+        ProcessInterrupt interrupt = new ProcessInterrupt(EInterrupt.EProcessInterrupt.PROCESS_START, process);
+        addInterrupt(interrupt);
+        return interrupt;
     }
     private void addInterrupt(Interrupt interrupt) {
         runWithInterruptQueueSemaphore(() -> interruptQueue.offer(interrupt));

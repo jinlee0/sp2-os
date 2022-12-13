@@ -6,10 +6,10 @@ import main.java.io.Monitor;
 import main.java.os.interrupt.*;
 import main.java.utils.Logger;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Scheduler{
     // components
@@ -25,6 +25,9 @@ public class Scheduler{
 
     // working variables
     private Process runningProcess;
+
+    // GUI listener
+    private ConcurrentLinkedDeque<Consumer<ProcessInterrupt>> interruptHandlingListeners = new ConcurrentLinkedDeque<>();
 
     private static final int READY_QUEUE_MAX_SIZE = 10;
 
@@ -110,6 +113,16 @@ public class Scheduler{
             if(interrupt == null) return;
             EInterrupt eInterrupt = interrupt.getEInterrupt();
             Logger.add("Handle Interrupt: " + eInterrupt);
+
+            List<ProcessInterrupt> removeList = new ArrayList<>();
+            interruptHandlingListeners.forEach(listener -> {
+                if(interrupt instanceof ProcessInterrupt) {
+                    listener.accept((ProcessInterrupt) interrupt);
+                    removeList.add((ProcessInterrupt) interrupt);
+                }
+            });
+            interruptHandlingListeners.removeAll(removeList);
+
             handle(interrupt);
         }
 
@@ -220,5 +233,9 @@ public class Scheduler{
             Process nextProcess = scheduler.deReadyQueue();
             scheduler.setRunningProcess(nextProcess);
         }
+    }
+
+    public void addInterruptHandlingListener(Consumer<ProcessInterrupt> listener) {
+        interruptHandlingListeners.add(listener);
     }
 }

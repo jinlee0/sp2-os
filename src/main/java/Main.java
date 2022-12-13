@@ -7,6 +7,8 @@ import main.java.io.FileSystem;
 import main.java.os.Scheduler;
 import main.java.os.UI;
 import main.java.os.interrupt.InterruptQueue;
+import main.java.ui.GUIMain;
+import main.java.utils.Logger;
 
 public class Main {
     private final InterruptQueue interruptQueue = new InterruptQueue();
@@ -15,21 +17,27 @@ public class Main {
     private final FileSystem fileSystem = new FileSystem(interruptQueue);
     private final Scheduler scheduler = new Scheduler(interruptQueue, monitor, keyboard, fileSystem);
     private final CPU cpu = new CPU(scheduler);
-    private final UI ui = new UI(this, scheduler, interruptQueue);
+//    private final UI ui = new UI(this, scheduler, interruptQueue);
+    private final GUIMain guiMain = new GUIMain(this, scheduler, interruptQueue);
 
     public static void main(String[] args) {
         Main main = new Main();
-        main.cpu.start();
-        main.ui.start();
-//        new GUIMain().run();
-        main.monitor.start();
-        main.keyboard.start();
-        main.fileSystem.start();
+        main.run();
+        Logger.startAutoFlush();
+    }
+
+    public void run() {
+        cpu.start();
+//        ui.start();
+        guiMain.run();
+        monitor.start();
+        keyboard.start();
+        fileSystem.start();
     }
 
     public void initialize() {
         scheduler.initialize();
-        ui.initialize();
+//        ui.initialize();
         cpu.initialize();
         fileSystem.initialize();
         monitor.initialize();

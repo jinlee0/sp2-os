@@ -1,18 +1,33 @@
 package main.java.ui;
 
+import main.java.os.Scheduler;
+import main.java.os.interrupt.InterruptQueue;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.function.Consumer;
 
 public class MainFrame extends JFrame {
     private final MainPanel mainPanel;
 
-    public MainFrame() {
+    public MainFrame(Scheduler scheduler, InterruptQueue interruptQueue, Runnable finish) {
         super();
+
+
         this.setTitle("MyOS");
         this.setLocation(new Point(0, 0));
         this.setMinimumSize(new Dimension(1080, 300));
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                finish.run();
+            }
+        });
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.mainPanel = new MainPanel();
+        this.mainPanel = new MainPanel(scheduler, interruptQueue);
 
         this.add(mainPanel);
 
@@ -21,4 +36,8 @@ public class MainFrame extends JFrame {
     }
 
 
+    public void finish() {
+        mainPanel.finish();
+        System.out.println("MainFrame Finished");
+    }
 }
