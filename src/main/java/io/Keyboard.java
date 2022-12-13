@@ -50,6 +50,7 @@ public class Keyboard extends MyIO{
     }
 
     public void finish() {
+        System.out.println("Keyboard Finished");
     }
 
     private enum KeyboardCode {

@@ -176,7 +176,7 @@ public class Process {
     }
 
     public void finish() {
-        // 리소스 반환
+        System.out.println("Process " + serialNumber + " is finished");
     }
 
     private int allocateHeap() {

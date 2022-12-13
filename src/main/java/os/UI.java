@@ -1,5 +1,6 @@
 package main.java.os;
 
+import main.java.Main;
 import main.java.exception.ProcessNotFound;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.utils.Logger;
@@ -16,8 +17,10 @@ public class UI extends Thread {
     private final InterruptQueue interruptQueue;
     private final SPrinter printer = SPrinter.getInstance();
     private final SScanner scanner = SScanner.getInstance();
+    private final Main main;
 
-    public UI(Scheduler scheduler, InterruptQueue interruptQueue) {
+    public UI(Main main, Scheduler scheduler, InterruptQueue interruptQueue) {
+        this.main = main;
         this.loader = new Loader(interruptQueue);
         this.scheduler = scheduler;
         this.interruptQueue = interruptQueue;
@@ -40,6 +43,7 @@ public class UI extends Thread {
             switch (command) {
                 case "q":
                     printlnln("End system");
+                    this.finish();
                     System.exit(0);
                     return;
                 case "r":
@@ -108,5 +112,6 @@ public class UI extends Thread {
     }
 
     public void finish() {
+        this.main.finish();
     }
 }

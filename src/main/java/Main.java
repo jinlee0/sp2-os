@@ -15,7 +15,7 @@ public class Main {
     private final FileSystem fileSystem = new FileSystem(interruptQueue);
     private final Scheduler scheduler = new Scheduler(interruptQueue, monitor, keyboard, fileSystem);
     private final CPU cpu = new CPU(scheduler);
-    private final UI ui = new UI(scheduler, interruptQueue);
+    private final UI ui = new UI(this, scheduler, interruptQueue);
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -27,7 +27,7 @@ public class Main {
         main.fileSystem.start();
     }
 
-    private void initialize() {
+    public void initialize() {
         scheduler.initialize();
         ui.initialize();
         cpu.initialize();
@@ -36,12 +36,11 @@ public class Main {
         keyboard.initialize();
     }
 
-    private void finish() {
+    public void finish() {
         keyboard.finish();
         monitor.finish();
         fileSystem.finish();
         cpu.finish();
-        ui.finish();
-        scheduler.finish();
+        System.out.println("Main Finished");
     }
 }

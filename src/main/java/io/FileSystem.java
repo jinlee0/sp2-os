@@ -100,7 +100,7 @@ public class FileSystem extends MyIO {
     }
 
     public void finish() {
-
+        System.out.println("FileSystem Finished");
     }
 
     public enum FileCode {

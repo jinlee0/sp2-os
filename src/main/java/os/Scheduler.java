@@ -7,6 +7,7 @@ import main.java.os.interrupt.*;
 import main.java.utils.Logger;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Queue;
 
@@ -88,6 +89,13 @@ public class Scheduler{
     }
 
     public void finish() {
+        ArrayList<Process> processes = new ArrayList<>();
+        processes.addAll(readyQueue);
+        processes.addAll(waitQueue);
+        if(runningProcess != null) processes.add(runningProcess);
+        processes.forEach(process -> {
+            interruptHandler.handleProcessEnd(process);
+        });
     }
 
     private class InterruptHandler {

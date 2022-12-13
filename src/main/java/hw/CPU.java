@@ -25,10 +25,10 @@ public class CPU extends Thread {
     }
 
     public void initialize() {
-        Logger.add("CPU run() start");
     }
 
     public void finish() {
-        Logger.add("CPU run() end");
+        scheduler.finish();
+        System.out.println("CPU Finished");
     }
 }

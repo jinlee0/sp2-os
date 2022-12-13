@@ -46,6 +46,7 @@ public class Monitor extends MyIO{
     }
 
     public void finish() {
+        System.out.println("Monitor Finished");
     }
 
     private enum MonitorCode {
