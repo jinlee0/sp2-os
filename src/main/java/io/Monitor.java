@@ -5,9 +5,12 @@ import main.java.exception.InvalidInterruptForMonitorException;
 import main.java.os.Process;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
-import main.java.utils.SPrinter;
+
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.BiConsumer;
 
 public class Monitor extends MyIO{
+    private ConcurrentLinkedDeque<BiConsumer<Process, String>> writeListeners = new ConcurrentLinkedDeque<>();
 
     public Monitor(InterruptQueue interruptQueue) {
         super(interruptQueue);
@@ -37,16 +40,25 @@ public class Monitor extends MyIO{
 
     private void handleWrite(Process process) {
         int address = process.popFromStackSegment();
-        System.out.println(address);
-        SPrinter.getInstance().println("Process_" + process.getSerialNumber() + " >> Screen >> " + process.retrieveFromMemory(address) + System.lineSeparator());
+        int value = process.retrieveFromMemory(address);
+        writeListeners.forEach(listener -> listener.accept(process, value +""));
+//        SPrinter.getInstance().println("Process_" + process.getSerialNumber() + " >> Screen >> " + process.retrieveFromMemory(address) + System.lineSeparator());
         interruptQueue.addWriteIntComplete(process);
     }
 
-    public void initialize() {
+    public void addWriteListener(BiConsumer<Process, String> listener) {
+        writeListeners.add(listener);
+    }
+
+    public void removeWriteListner(BiConsumer<Process, String> writeListenerForMonitor) {
+        writeListeners.remove(writeListenerForMonitor);
     }
 
     public void finish() {
         System.out.println("Monitor Finished");
+    }
+
+    public void initialize() {
     }
 
     private enum MonitorCode {

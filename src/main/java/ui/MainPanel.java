@@ -1,7 +1,8 @@
 package main.java.ui;
 
+import main.java.io.Keyboard;
+import main.java.io.Monitor;
 import main.java.os.Loader;
-import main.java.os.Process;
 import main.java.os.Scheduler;
 import main.java.os.interrupt.InterruptQueue;
 import main.java.os.interrupt.ProcessInterrupt;
@@ -16,16 +17,12 @@ import java.util.List;
 
 public class MainPanel extends JPanel {
 
-    private final Scheduler scheduler;
-    private final InterruptQueue interruptQueue;
     private final Loader loader;
 
     private final List<String> programs = new ArrayList<>();
 
-    public MainPanel(Scheduler scheduler, InterruptQueue interruptQueue) {
+    public MainPanel(Scheduler scheduler, InterruptQueue interruptQueue, Keyboard keyboard, Monitor monitor) {
         super();
-        this.scheduler = scheduler;
-        this.interruptQueue = interruptQueue;
         this.loader = new Loader(interruptQueue);
 
         List.of(new File("programs/").listFiles()).forEach(file -> programs.add(file.getName()));
@@ -51,7 +48,7 @@ public class MainPanel extends JPanel {
                         ProcessInterrupt processInterrupt = interruptQueue.addProcessStart(loader.load(programName));
                         scheduler.addInterruptHandlingListener((interrupt) -> {
                             if(interrupt == processInterrupt) {
-                                new ProcessFrame(scheduler, interruptQueue, interrupt.getProcess());
+                                new ProcessFrame(scheduler, interruptQueue, keyboard, monitor, interrupt.getProcess());
                             }
                         });
                     } catch (FileNotFoundException ex) {

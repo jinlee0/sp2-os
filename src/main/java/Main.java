@@ -17,8 +17,8 @@ public class Main {
     private final FileSystem fileSystem = new FileSystem(interruptQueue);
     private final Scheduler scheduler = new Scheduler(interruptQueue, monitor, keyboard, fileSystem);
     private final CPU cpu = new CPU(scheduler);
-    private final UI ui = new UI(this, scheduler, interruptQueue);
-    private final GUIMain guiMain = new GUIMain(this, scheduler, interruptQueue);
+//    private final UI ui = new UI(this, scheduler, interruptQueue);
+    private final GUIMain guiMain = new GUIMain(this, scheduler, interruptQueue, keyboard, monitor);
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -28,8 +28,7 @@ public class Main {
 
     public void run() {
         cpu.start();
-        ui.start();
-        guiMain.run();
+//        ui.start();
         monitor.start();
         keyboard.start();
         fileSystem.start();

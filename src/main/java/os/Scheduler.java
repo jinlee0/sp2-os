@@ -235,6 +235,7 @@ public class Scheduler{
         }
     }
 
+    // 일회용
     public void addInterruptHandlingListener(Consumer<ProcessInterrupt> listener) {
         interruptHandlingListeners.add(listener);
     }

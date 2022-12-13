@@ -1,6 +1,8 @@
 package main.java.ui;
 
 import main.java.Main;
+import main.java.io.Keyboard;
+import main.java.io.Monitor;
 import main.java.os.Scheduler;
 import main.java.os.interrupt.InterruptQueue;
 
@@ -8,17 +10,11 @@ public class GUIMain {
     private MainFrame mainFrame;
 
     private final Main main;
-    private final Scheduler scheduler;
-    private final InterruptQueue interruptQueue;
 
-    public GUIMain(Main main, Scheduler scheduler, InterruptQueue interruptQueue) {
+    public GUIMain(Main main, Scheduler scheduler, InterruptQueue interruptQueue, Keyboard keyboard, Monitor monitor) {
         this.main = main;
-        this.scheduler = scheduler;
-        this.interruptQueue = interruptQueue;
-    }
+        this.mainFrame = new MainFrame(scheduler, keyboard, monitor, interruptQueue, () -> finish());
 
-    public void run() {
-        this.mainFrame = new MainFrame(scheduler, interruptQueue, () -> finish());
     }
 
     public void finish() {

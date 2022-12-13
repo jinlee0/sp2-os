@@ -26,7 +26,7 @@ public class Logger {
     }
 
     public static void add(Process process, String msg) {
-        loggingListeners.forEach(listener -> listener.accept(process, msg + System.lineSeparator()));
+        loggingListeners.forEach(listener -> listener.accept(process, msg));
         add(msg);
     }
 
@@ -55,6 +55,10 @@ public class Logger {
 
     public static void addLoggingListener(BiConsumer<Process, String> listener) {
         loggingListeners.add(listener);
+    }
+
+    public static void removeLoggingListner(BiConsumer<Process, String> loggingListener) {
+        loggingListeners.remove(loggingListener);
     }
 
     public static void stopAutoFlush() {

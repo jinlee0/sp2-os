@@ -1,5 +1,7 @@
 package main.java.ui;
 
+import main.java.io.Keyboard;
+import main.java.io.Monitor;
 import main.java.os.Scheduler;
 import main.java.os.interrupt.InterruptQueue;
 
@@ -7,12 +9,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.function.Consumer;
 
 public class MainFrame extends JFrame {
     private final MainPanel mainPanel;
 
-    public MainFrame(Scheduler scheduler, InterruptQueue interruptQueue, Runnable finish) {
+    public MainFrame(Scheduler scheduler, Keyboard keyboard, Monitor monitor, InterruptQueue interruptQueue, Runnable finish) {
         super();
 
 
@@ -27,7 +28,7 @@ public class MainFrame extends JFrame {
             }
         });
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.mainPanel = new MainPanel(scheduler, interruptQueue);
+        this.mainPanel = new MainPanel(scheduler, interruptQueue, keyboard, monitor);
 
         this.add(mainPanel);
 

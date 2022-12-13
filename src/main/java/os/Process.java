@@ -62,7 +62,10 @@ public class Process {
 
     private void executeOneLine() {
         int PC = processControlBlock.getPC();
-        if(PC >= codeSegment.size()) return;
+        if(PC >= codeSegment.size()) {
+            interruptQueue.addProcessEnd(this);
+            return;
+        };
         Instruction instruction = codeSegment.get(PC);
         processControlBlock.getContext().setPC(PC + 1);
         Logger.add(this, "\tPC: "+ PC + ", " + instruction);

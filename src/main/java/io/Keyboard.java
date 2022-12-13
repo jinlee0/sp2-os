@@ -7,8 +7,14 @@ import main.java.os.interrupt.InterruptQueue;
 import main.java.power.Power;
 import main.java.utils.SScanner;
 
-public class Keyboard extends MyIO{
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
 
+public class Keyboard extends MyIO{
+    private final Map<Process, InputWaiter> inputWaiterMap = new HashMap<>();
     public Keyboard(InterruptQueue interruptQueue) {
         super(interruptQueue);
     }
@@ -37,13 +43,33 @@ public class Keyboard extends MyIO{
     }
 
     private void handleRead(Process process) {
-        SScanner scanner = SScanner.getInstance();
-        String input = "";
-        while(input.isBlank()) input = scanner.nextLine("Process_" + process.getSerialNumber() + " >> " + "Keyboard >> ");
-        int buffer = Integer.parseInt(input);
-        int address = process.popFromStackSegment();
-        process.storeToMemory(address, buffer);
-        interruptQueue.addReadIntComplete(process);
+//        SScanner scanner = SScanner.getInstance();
+//        String input = "";
+//        while(input.isBlank()) input = scanner.nextLine("Process_" + process.getSerialNumber() + " >> " + "Keyboard >> ");
+//        int buffer = Integer.parseInt(input);
+//        int address = process.popFromStackSegment();
+//        process.storeToMemory(address, buffer);
+//        interruptQueue.addReadIntComplete(process);
+        InputWaiter inputWaiter = new InputWaiter(process);
+        inputWaiter.start();
+        inputWaiterMap.put(process, inputWaiter);
+    }
+
+    public void addInput(Process process, String message) {
+        InputWaiter inputWaiter = inputWaiterMap.get(process);
+        try {
+            inputWaiter.blockingQueue.put(message);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void stopAllThreadsOf(Process process) {
+        InputWaiter inputWaiter = inputWaiterMap.get(process);
+        if(inputWaiter!=null) {
+            inputWaiter.interrupt();
+            inputWaiterMap.remove(process);
+        }
     }
 
     public void initialize() {
@@ -72,6 +98,28 @@ public class Keyboard extends MyIO{
                 if(keyboardCode.ioCode == ioCode) return keyboardCode;
             }
             throw new InvalidInterruptCodeException();
+        }
+    }
+
+    private class InputWaiter extends Thread {
+        private BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<>();
+        private final Process ownerProcess;
+
+        public InputWaiter(Process ownerProcess) {
+            this.ownerProcess = ownerProcess;
+        }
+
+        @Override
+        public void run() {
+            try {
+                String input = blockingQueue.take();
+                int buffer = Integer.parseInt(input);
+                int address = ownerProcess.popFromStackSegment();
+                ownerProcess.storeToMemory(address, buffer);
+                interruptQueue.addReadIntComplete(ownerProcess);
+            } catch (InterruptedException e) {
+                // interrupted when process end (by GUI)
+            }
         }
     }
 }
