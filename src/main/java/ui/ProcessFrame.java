@@ -59,6 +59,7 @@ public class ProcessFrame extends JFrame {
 
         TextField keyboardField = new TextField();
         ioPanel.add(keyboardField);
+        keyboardField.setEditable(false);
         keyboardField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -70,6 +71,16 @@ public class ProcessFrame extends JFrame {
                     monitorArea.append("input << " + text + System.lineSeparator());
                     keyboardField.setText("");
                 }
+            }
+        });
+        scheduler.addInterruptHandlingListener(interrupt -> {
+            if (interrupt.getProcess() == process && interrupt.getEInterrupt() == EInterrupt.EProcessInterrupt.READ_INT_START) {
+                keyboardField.setEditable(true);
+            }
+        });
+        scheduler.addInterruptHandlingListener(interrupt -> {
+            if (interrupt.getProcess() == process && interrupt.getEInterrupt() == EInterrupt.EProcessInterrupt.READ_INT_COMPLETE) {
+                keyboardField.setEditable(false);
             }
         });
         ///////////

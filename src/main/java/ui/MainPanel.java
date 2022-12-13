@@ -65,12 +65,22 @@ public class MainPanel extends JPanel {
             });
         });
 
-        TextArea schedulerInfoArea = new TextArea();
-        mainPanel.add(schedulerInfoArea);
-        schedulerInfoArea.setEditable(false);
+        TextArea runningProcessArea = new TextArea();
+        mainPanel.add(runningProcessArea);
+        runningProcessArea.setEditable(false);
+
+        TextArea readyQueuArea = new TextArea();
+        mainPanel.add(readyQueuArea);
+        readyQueuArea.setEditable(false);
+
+        TextArea waitingQueuArea = new TextArea();
+        mainPanel.add(waitingQueuArea);
+        waitingQueuArea.setEditable(false);
 
         scheduler.setListener(theScheduler -> {
-            schedulerInfoArea.setText(theScheduler.toString());
+            runningProcessArea.setText(theScheduler.toStringRunningProcess());
+            readyQueuArea.setText(theScheduler.toStringReadyQueue());
+            waitingQueuArea.setText(theScheduler.toStringWaitingQueue());
         });
 
     }

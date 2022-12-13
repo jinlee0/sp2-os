@@ -52,7 +52,6 @@ public class Scheduler{
         }
         runningProcess.run();
         schedulerListener.accept(this);
-        System.out.println(this);
     }
 
     private void enReadyQueue(Process process) {
@@ -107,16 +106,29 @@ public class Scheduler{
 
     @Override
     public String toString() {
-        String re = "";
-        for (Process process : readyQueue) {
-            re += process + System.lineSeparator();
-        }
+        return toStringRunningProcess() + System.lineSeparator() +
+                toStringReadyQueue() + System.lineSeparator() +
+                toStringWaitingQueue();
+    }
+
+    public String toStringWaitingQueue() {
         String wa = "";
         for (Process process : waitQueue) {
             wa += process + System.lineSeparator();
         }
-        return "readyQueue=" + re + System.lineSeparator() +
-                "waitQueue=" + wa;
+        return "waitQueue=" + wa;
+    }
+
+    public String toStringReadyQueue() {
+        String re = "";
+        for (Process process : readyQueue) {
+            re += process + System.lineSeparator();
+        }
+        return "readyQueue=" + re;
+    }
+
+    public String toStringRunningProcess() {
+        return "runningProcess="+ runningProcess;
     }
 
     private class InterruptHandler {
