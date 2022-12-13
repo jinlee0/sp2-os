@@ -4,12 +4,12 @@ import main.java.os.Process;
 import main.java.os.Scheduler;
 import main.java.os.interrupt.EInterrupt;
 import main.java.os.interrupt.InterruptQueue;
-import main.java.os.interrupt.ProcessInterrupt;
+import main.java.utils.Logger;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class ProcessFrame extends JFrame {
 
@@ -19,13 +19,19 @@ public class ProcessFrame extends JFrame {
         this.setTitle("Process_" + process.getSerialNumber());
 
         JPanel processPanel = new JPanel();
-        this.add(processPanel);
+//        this.add(processPanel);
         processPanel.setLayout(new BoxLayout(processPanel, BoxLayout.Y_AXIS));
+
+        JScrollPane scrollPane = new JScrollPane(processPanel);
+        this.add(scrollPane);
+        scrollPane.setPreferredSize(new Dimension(600, 600));
 
         JLabel title = new JLabel("Process_" + process.getSerialNumber());
         processPanel.add(title);
 
-        JFrame thisFrame = this;
+        JTextArea logArea = new JTextArea();
+        processPanel.add(logArea);
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -33,10 +39,17 @@ public class ProcessFrame extends JFrame {
                 interruptQueue.addProcessEnd(process);
             }
         });
+        JFrame thisFrame = this;
         scheduler.addInterruptHandlingListener(interrupt -> {
             if (interrupt.getProcess() == process && interrupt.getEInterrupt() == EInterrupt.EProcessInterrupt.PROCESS_END) {
-                thisFrame.dispose();
+                logArea.append("end");
+                scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
             }
+        });
+        Logger.addLoggingListener((theProcess, message) -> {
+            if(theProcess == process) logArea.append(message);
+            thisFrame.pack();
+            scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
         });
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.pack();

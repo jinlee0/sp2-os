@@ -30,7 +30,7 @@ public class Process {
     }
 
     public void run() {
-        Logger.add("Process" + serialNumber);
+        Logger.add(this, "Process" + serialNumber);
         if (processControlBlock.getStatus() != ProcessStatus.RUNNING) {
             processControlBlock.setStatus(ProcessStatus.RUNNING);
             timer = new Timer();
@@ -65,7 +65,7 @@ public class Process {
         if(PC >= codeSegment.size()) return;
         Instruction instruction = codeSegment.get(PC);
         processControlBlock.getContext().setPC(PC + 1);
-        Logger.add("\tPC: "+ PC + ", " + instruction);
+        Logger.add(this, "\tPC: "+ PC + ", " + instruction);
 
         OpCode opCode = instruction.getOpCode();
         int operand = instruction.getOperand();
@@ -363,7 +363,7 @@ public class Process {
     private enum OpCode {
         HALT((process, operand) -> {
             process.interruptQueue.addProcessEnd(process);
-            Logger.add(process.toString());
+            Logger.add(process, process.toString());
         }),
         LDC((process, operand) -> process.processControlBlock.setAC(operand)),
         LDA((process, operand) -> process.processControlBlock.setAC(process.retrieveFromMemory(operand))),
@@ -459,4 +459,5 @@ public class Process {
             void execute(Process process);
         }
     }
+
 }
